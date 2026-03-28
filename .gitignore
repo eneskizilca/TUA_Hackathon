@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Mac OS
+.DS_Store
+
+# Frontend (Next.js)
+node_modules/
+.next/
+out/
+build/
+.env.local
+
+# Backend (Python / FastAPI)
+venv/
+env/
+__pycache__/
+*.pyc
+.env
+ml/*.pkl
