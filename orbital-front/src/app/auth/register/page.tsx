@@ -3,8 +3,95 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Terminal, Activity, Rocket, Info, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [role, setRole] = useState<"OBSERVER" | "OPERATOR">("OBSERVER");
+  const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.full_name || !formData.email || !formData.password) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError("You must accept the terms");
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      full_name: formData.full_name,
+      email: formData.email,
+      password: formData.password,
+      role: role, // UPPERCASE gönder
+    };
+
+    console.log("Sending payload:", payload);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        // 422 validation hatası için detaylı mesaj
+        if (response.status === 422 && data.detail) {
+          const validationErrors = Array.isArray(data.detail) 
+            ? data.detail.map((err: any) => `${err.loc?.join('.')}: ${err.msg}`).join(', ')
+            : JSON.stringify(data.detail);
+          throw new Error(`Validation error: ${validationErrors}`);
+        }
+        
+        // Diğer hatalar
+        const errorMessage = typeof data.detail === 'string' 
+          ? data.detail 
+          : JSON.stringify(data.detail || data);
+        throw new Error(errorMessage);
+      }
+
+      // Başarılı kayıt
+      router.push("/auth/login");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+      console.error("Registration error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 lg:p-12 relative overflow-hidden bg-astro-black">
       {/* Container */}
@@ -80,17 +167,37 @@ export default function RegisterPage() {
             
             {/* Nav Tabs */}
             <div className="flex h-24 mb-10 bg-[#1a1a1a] shadow-inner mb-12">
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 border-b-2 border-astro-cyan text-astro-cyan cursor-pointer transition-colors bg-[#1f1f1f]">
+              <div 
+                onClick={() => setRole("OBSERVER")}
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
+                  role === "OBSERVER" 
+                    ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
+                    : "border-transparent text-astro-muted hover:text-white/80"
+                }`}
+              >
                 <Eye size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OBSERVER</span>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-astro-muted cursor-pointer transition-colors hover:text-white/80">
+              <div 
+                onClick={() => setRole("OPERATOR")}
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
+                  role === "OPERATOR" 
+                    ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
+                    : "border-transparent text-astro-muted hover:text-white/80"
+                }`}
+              >
                 <Terminal size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OPERATOR</span>
               </div>
             </div>
 
-            <form className="flex flex-col flex-1" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col flex-1" onSubmit={handleSubmit}>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/50 p-4 mb-6 text-red-400 text-xs font-mono tracking-wider">
+                  {error}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-x-12 gap-y-12 mb-10">
                 <div className="flex flex-col gap-3">
                   <label className="text-astro-muted text-[9px] font-mono tracking-[0.2em] uppercase">
@@ -100,6 +207,9 @@ export default function RegisterPage() {
                     type="text" 
                     placeholder="COMMANDER J. DOE" 
                     className="astro-input"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    required
                   />
                 </div>
 
@@ -111,6 +221,9 @@ export default function RegisterPage() {
                     type="email" 
                     placeholder="CONTACT@ASTRO.IO" 
                     className="astro-input"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
                   />
                 </div>
 
@@ -122,17 +235,23 @@ export default function RegisterPage() {
                     type="password" 
                     placeholder="••••••••" 
                     className="astro-input text-lg tracking-[0.2em]"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
                   />
                 </div>
 
                 <div className="flex flex-col gap-3">
                   <label className="text-astro-muted text-[9px] font-mono tracking-[0.2em] uppercase">
-                    PASSWORD
+                    CONFIRM PASSWORD
                   </label>
                   <input 
                     type="password" 
                     placeholder="••••••••" 
                     className="astro-input text-lg tracking-[0.2em]"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    required
                   />
                 </div>
               </div>
@@ -147,7 +266,13 @@ export default function RegisterPage() {
 
               {/* Terms Checkbox */}
               <div className="flex items-start gap-5 mb-auto">
-                <input type="checkbox" className="astro-checkbox mt-0.5 flex-shrink-0" id="terms" />
+                <input 
+                  type="checkbox" 
+                  className="astro-checkbox mt-0.5 flex-shrink-0" 
+                  id="terms"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                />
                 <label htmlFor="terms" className="text-astro-muted text-[10px] uppercase font-mono tracking-[0.15em] cursor-pointer select-none leading-relaxed">
                   I ACCEPT THE PROTOCOL TERMS OF USE AND DATA PROCESSING AUTHORIZATION.
                 </label>
@@ -156,9 +281,10 @@ export default function RegisterPage() {
               {/* Submit Button */}
               <button 
                 type="submit" 
-                className="w-full bg-astro-cyan text-astro-black font-bold text-[13px] tracking-[0.25em] py-5 px-8 flex justify-between items-center hover:bg-astro-cyan-dim transition-colors mt-8 group"
+                disabled={loading}
+                className="w-full bg-astro-cyan text-astro-black font-bold text-[13px] tracking-[0.25em] py-5 px-8 flex justify-between items-center hover:bg-astro-cyan-dim transition-colors mt-8 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                INITIATE REGISTRATION
+                {loading ? "PROCESSING..." : "INITIATE REGISTRATION"}
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </form>
