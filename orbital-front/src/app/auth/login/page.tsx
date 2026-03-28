@@ -9,28 +9,28 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen relative flex items-center justify-center bg-[#070809] p-4 text-[0.7rem] text-slate-400 overflow-hidden font-mono tracking-widest uppercase">
       {/* Background Pattern - Grid */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none opacity-10"
         style={{
           backgroundImage: "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
           backgroundSize: "40px 40px"
         }}
       />
-      
+
       {/* Background Pattern - Circles */}
       <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full border border-white/5 pointer-events-none" />
       <div className="absolute top-[30%] -right-[15%] w-[60vw] h-[60vw] rounded-full border border-white/5 pointer-events-none" />
 
       {/* Main Card */}
       <div className="w-full max-w-[420px] bg-[#0c0d0f] border-t-2 border-[#7be1ea] p-10 relative z-10 flex flex-col items-center">
-        
+
         {/* Logo Placement */}
         <div className="mb-6 flex justify-center">
-          <Image 
-            src="/astrologo.gif" 
-            alt="Logo" 
-            width={80} 
-            height={80} 
+          <Image
+            src="/astrologo.gif"
+            alt="Logo"
+            width={80}
+            height={80}
             className="opacity-95 mix-blend-screen"
             unoptimized
           />
@@ -54,10 +54,10 @@ export default function LoginPage() {
             </label>
             <div className="relative flex items-center border-b border-white/10 group-focus-within:border-[#7be1ea] transition-colors pb-2">
               <AtSign className="w-4 h-4 text-[#5a6a75] mr-4" />
-              <input 
-                type="text" 
-                placeholder="orbital_id@astro.sys" 
-                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-sm tracking-wider" 
+              <input
+                type="text"
+                placeholder="orbital_id@astro.sys"
+                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-sm tracking-wider"
               />
             </div>
           </div>
@@ -68,10 +68,10 @@ export default function LoginPage() {
             </label>
             <div className="relative flex items-center border-b border-white/10 group-focus-within:border-[#7be1ea] transition-colors pb-2">
               <Lock className="w-4 h-4 text-[#5a6a75] mr-4" />
-              <input 
-                type="password" 
-                placeholder="••••••••••••" 
-                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-lg tracking-[0.3em]" 
+              <input
+                type="password"
+                placeholder="••••••••••••"
+                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-lg tracking-[0.3em]"
               />
             </div>
           </div>
@@ -82,9 +82,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-8 text-[0.6rem] tracking-widest text-[#5a6a75] hover:text-white cursor-pointer transition-colors">
+        <Link href="/auth/forgot-password" className="mt-8 text-[0.6rem] tracking-widest text-[#5a6a75] hover:text-white cursor-pointer transition-colors">
           FORGOT PASSWORD
-        </div>
+        </Link>
 
         <div className="mt-8 text-[0.65rem] tracking-widest text-[#5a6a75]">
           DON'T HAVE AN ACCOUNT? <Link href="/auth/register" className="text-[#7be1ea] hover:text-white transition-colors">SIGN UP</Link>
@@ -106,14 +106,14 @@ export default function LoginPage() {
 
       {/* Footer Area */}
       <div className="absolute bottom-6 w-full px-10 flex justify-between items-center text-[0.55rem] text-[#4a5a65] tracking-[0.2em] z-0">
-         <div>
-            © 2024 ORBITAL SENTINEL SYSTEMS. ALL RIGHTS RESERVED.
-         </div>
-         <div className="flex gap-8">
-            <span className="hover:text-white cursor-pointer transition-colors">PRIVACY</span>
-            <span className="hover:text-white cursor-pointer transition-colors">SECURITY</span>
-            <span className="hover:text-white cursor-pointer transition-colors">TERMINAL_LOGS</span>
-         </div>
+        <div>
+          © 2024 ORBITAL SENTINEL SYSTEMS. ALL RIGHTS RESERVED.
+        </div>
+        <div className="flex gap-8">
+          <span className="hover:text-white cursor-pointer transition-colors">PRIVACY</span>
+          <span className="hover:text-white cursor-pointer transition-colors">SECURITY</span>
+          <span className="hover:text-white cursor-pointer transition-colors">TERMINAL_LOGS</span>
+        </div>
       </div>
     </main>
   );
