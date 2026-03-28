@@ -98,14 +98,14 @@ export default function UserManagementPage() {
 
       <main className="flex-1 flex overflow-hidden">
         {/* LEFT NAV SIDEBAR */}
-        <aside className="w-[280px] bg-[#0c0d0f] border-r border-[#1e293b] flex flex-col py-8 shrink-0 shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-20">
+                <aside className="w-[280px] bg-[#0c0d0f] border-r border-[#1e293b] flex flex-col py-8 shrink-0 shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-20">
            <div className="px-6 mb-8 flex items-center gap-4">
-              <div className="w-10 h-10 bg-[#7be1ea] rounded-sm flex items-center justify-center text-black">
-                 <Box size={20} className="fill-black" />
+              <div className="w-10 h-10 bg-[#15171b] border border-white/10 rounded-sm flex items-center justify-center text-[#7be1ea]">
+                 <ShieldCheck size={20} />
               </div>
               <div className="flex flex-col">
-                 <span className="text-[#7be1ea] font-bold text-xs tracking-widest uppercase">{data.adminName}</span>
-                 <span className="text-[#a3e635] text-[9px] tracking-[0.1em] font-bold uppercase">{data.adminLocation}</span>
+                 <span className="text-[#a3e635] font-bold text-[10px] tracking-widest uppercase">SUPER_ADMIN</span>
+                 <span className="text-[#64748b] text-[9px] tracking-[0.1em] font-mono mt-0.5">79.0352° N, 12.1234° E</span>
               </div>
            </div>
 
@@ -118,20 +118,20 @@ export default function UserManagementPage() {
                  <Users size={18} />
                  <span className="font-bold tracking-[0.15em] text-[11px] uppercase">User Management</span>
               </Link>
-              <div className="px-6 py-4 flex items-center gap-4 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
+              <Link href="/dashboard/admin/pro-requests" className="px-6 py-4 flex items-center gap-4 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
                  <ShieldCheck size={18} className="group-hover:text-white transition-colors" />
                  <span className="font-bold tracking-[0.15em] text-[11px] group-hover:text-white transition-colors uppercase">Pro Requests</span>
-              </div>
-              <div className="px-6 py-4 flex items-center gap-4 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
+              </Link>
+              <Link href="/dashboard/admin/api-health" className="px-6 py-4 flex items-center gap-4 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
                  <Activity size={18} className="group-hover:text-white transition-colors" />
                  <span className="font-bold tracking-[0.15em] text-[11px] group-hover:text-white transition-colors uppercase">API Health</span>
-              </div>
+              </Link>
            </div>
 
            <div className="px-6 flex flex-col gap-2">
-              <button className="w-full bg-[#7be1ea] text-black font-extrabold text-[10px] tracking-[0.2em] py-4 mb-4 rounded-sm hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all uppercase">
+              <Link href="/dashboard/admin/report" className="w-full bg-[#7be1ea] text-black font-extrabold text-[10px] tracking-[0.2em] py-4 mb-4 rounded-sm hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all uppercase flex justify-center items-center">
                  GENERATE REPORT
-              </button>
+              </Link>
               <div className="py-3 flex items-center gap-4 text-[#64748b] hover:text-white cursor-pointer transition-colors group">
                  <FileText size={16} className="group-hover:text-white transition-colors" />
                  <span className="font-bold tracking-[0.15em] text-[11px] uppercase">Logs</span>
