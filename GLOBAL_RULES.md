@@ -1,9 +1,10 @@
 # ORBITAL SENSE - GLOBAL AI SYSTEM RULES
 
 ## 1. UI & LAYOUT PHILOSOPHY
-- **Approach:** Web-first, full-width (100vw/100vh) dashboard structures. No boxed layouts unless strictly required by a specific component.
+- **Approach:** Web-first, full-width dashboard structures. No boxed layouts unless strictly required by a specific component.
 - **Language:** English-first interface (Variables, component names, and UI text must be in English).
 - **Theme:** Deep dark mode native. Black backgrounds (`bg-black` or `bg-zinc-950`), neon cyan/blue/green accents.
+- **Colors:** primary: #4bd4e6, secondary: #c7ea03
 
 ## 2. TYPOGRAPHY
 - **Primary (font-sans):** `IBM Plex Sans`. Use for general UI, menus, headers, paragraphs, and buttons.
