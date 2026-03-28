@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-astro-cyan: #7be1ea;
+  --color-astro-cyan-dim: #3a8a92;
+  --color-astro-dark: #07090b;
+  --color-astro-black: #030405;
+  --color-astro-muted: #64748b;
+  --color-astro-border: #1e293b;
+}
+
+:root {
+  --background: #030405;
+  --foreground: #f8fafc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono), monospace;
+}
+
+/* Custom styles for the input fields */
+input.astro-input {
+  @apply bg-transparent border-b border-astro-border py-2 text-sm text-white focus:outline-none focus:border-astro-cyan transition-colors font-mono placeholder-astro-muted w-full;
+}
+
+/* Checkbox custom style */
+.astro-checkbox {
+  @apply appearance-none w-4 h-4 border border-astro-border rounded-sm bg-transparent checked:bg-astro-cyan checked:border-astro-cyan focus:outline-none transition-colors cursor-pointer relative;
+}
+
+.astro-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
