@@ -89,7 +89,7 @@ export default function UserManagementPage() {
         </div>
         <div className="flex items-center gap-6 text-[#475569]">
           <Bell size={18} className="hover:text-white cursor-pointer transition-colors" />
-          <Settings size={18} className="hover:text-white cursor-pointer transition-colors" />
+          <Link href="/dashboard/settings"><Settings size={18} className="hover:text-white cursor-pointer transition-colors" /></Link>
           <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
             <User size={16} className="text-white/60" />
           </div>

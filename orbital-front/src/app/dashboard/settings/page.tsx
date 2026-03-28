@@ -27,7 +27,7 @@ export interface UserSettingsData {
   };
 }
 
-export default function OperatorSettingsPage() {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [data, setData] = useState<UserSettingsData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -106,7 +106,7 @@ export default function OperatorSettingsPage() {
         </div>
         <div className="flex items-center gap-6 text-[#475569]">
           <Bell size={18} className="hover:text-white cursor-pointer transition-colors" />
-          <Link href="/operator/settings"><SettingsIcon size={18} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] cursor-pointer" /></Link>
+          <SettingsIcon size={18} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] cursor-pointer" />
           <div className="w-8 h-8 rounded-full border border-[#7be1ea]/50 flex items-center justify-center cursor-pointer bg-[#7be1ea]/10 transition-colors">
             <User size={16} className="text-[#7be1ea]" />
           </div>
@@ -116,12 +116,12 @@ export default function OperatorSettingsPage() {
       <main className="flex-1 flex overflow-hidden">
         {/* SETTINGS SIDEBAR NAV */}
         <aside className="w-[300px] border-r border-[#1e293b] flex flex-col py-8 px-6 bg-[#0c0d0f] shrink-0">
-           <Link href="/dashboard/operator" className="flex items-center gap-3 text-[#7be1ea] text-[10px] font-bold tracking-[0.2em] hover:text-white transition-colors mb-12 uppercase">
+           <Link href="/dashboard/admin" className="flex items-center gap-3 text-[#7be1ea] text-[10px] font-bold tracking-[0.2em] hover:text-white transition-colors mb-12 uppercase">
               <ArrowLeft size={14} />
-              RETURN TO OPERATOR DASHBOARD
+              RETURN TO DASHBOARD
            </Link>
 
-           <h3 className="text-white font-black text-2xl font-sans tracking-tight mb-8">OPERATOR SETTINGS</h3>
+           <h3 className="text-white font-black text-2xl font-sans tracking-tight mb-8">SETTINGS</h3>
 
            <div className="flex flex-col gap-2">
               <button onClick={() => setActiveTab("profile")} className={`px-4 py-4 rounded-sm flex items-center gap-4 transition-all text-[11px] font-bold tracking-[0.15em] uppercase ${activeTab === "profile" ? "bg-[#15171b] border-l-[3px] border-[#7be1ea] text-[#7be1ea]" : "text-[#64748b] hover:bg-white/5 border-l-[3px] border-transparent"}`}>

@@ -9,7 +9,7 @@ import {
   Activity, ArrowLeft, Terminal, Save, Fingerprint
 } from "lucide-react";
 
-type SettingsTab = "profile" | "security" | "notifications" | "interface";
+type SettingsTab = "profile" | "notifications" | "interface";
 
 export interface UserSettingsData {
   displayName: string;
@@ -27,7 +27,7 @@ export interface UserSettingsData {
   };
 }
 
-export default function OperatorSettingsPage() {
+export default function ObserverSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [data, setData] = useState<UserSettingsData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -106,7 +106,7 @@ export default function OperatorSettingsPage() {
         </div>
         <div className="flex items-center gap-6 text-[#475569]">
           <Bell size={18} className="hover:text-white cursor-pointer transition-colors" />
-          <Link href="/operator/settings"><SettingsIcon size={18} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] cursor-pointer" /></Link>
+          <Link href="/dashboard/observer/settings"><SettingsIcon size={18} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] cursor-pointer" /></Link>
           <div className="w-8 h-8 rounded-full border border-[#7be1ea]/50 flex items-center justify-center cursor-pointer bg-[#7be1ea]/10 transition-colors">
             <User size={16} className="text-[#7be1ea]" />
           </div>
@@ -116,22 +116,19 @@ export default function OperatorSettingsPage() {
       <main className="flex-1 flex overflow-hidden">
         {/* SETTINGS SIDEBAR NAV */}
         <aside className="w-[300px] border-r border-[#1e293b] flex flex-col py-8 px-6 bg-[#0c0d0f] shrink-0">
-           <Link href="/dashboard/operator" className="flex items-center gap-3 text-[#7be1ea] text-[10px] font-bold tracking-[0.2em] hover:text-white transition-colors mb-12 uppercase">
+           <Link href="/dashboard/observer" className="flex items-center gap-3 text-[#7be1ea] text-[10px] font-bold tracking-[0.2em] hover:text-white transition-colors mb-12 uppercase">
               <ArrowLeft size={14} />
-              RETURN TO OPERATOR DASHBOARD
+              RETURN TO OBSERVER DASHBOARD
            </Link>
 
-           <h3 className="text-white font-black text-2xl font-sans tracking-tight mb-8">OPERATOR SETTINGS</h3>
+           <h3 className="text-white font-black text-2xl font-sans tracking-tight mb-8">OBSERVER SETTINGS</h3>
 
            <div className="flex flex-col gap-2">
               <button onClick={() => setActiveTab("profile")} className={`px-4 py-4 rounded-sm flex items-center gap-4 transition-all text-[11px] font-bold tracking-[0.15em] uppercase ${activeTab === "profile" ? "bg-[#15171b] border-l-[3px] border-[#7be1ea] text-[#7be1ea]" : "text-[#64748b] hover:bg-white/5 border-l-[3px] border-transparent"}`}>
                  <UserCircle size={18} className={activeTab === "profile" ? "text-[#7be1ea]" : "text-[#475569]"} />
-                 Operator Profile
+                 Observer Profile
               </button>
-              <button onClick={() => setActiveTab("security")} className={`px-4 py-4 rounded-sm flex items-center gap-4 transition-all text-[11px] font-bold tracking-[0.15em] uppercase ${activeTab === "security" ? "bg-[#15171b] border-l-[3px] border-[#a3e635] text-[#a3e635]" : "text-[#64748b] hover:bg-white/5 border-l-[3px] border-transparent"}`}>
-                 <ShieldAlert size={18} className={activeTab === "security" ? "text-[#a3e635]" : "text-[#475569]"} />
-                 Security Matrix
-              </button>
+              
               <button onClick={() => setActiveTab("notifications")} className={`px-4 py-4 rounded-sm flex items-center gap-4 transition-all text-[11px] font-bold tracking-[0.15em] uppercase ${activeTab === "notifications" ? "bg-[#15171b] border-l-[3px] border-[#c084fc] text-[#c084fc]" : "text-[#64748b] hover:bg-white/5 border-l-[3px] border-transparent"}`}>
                  <BellRing size={18} className={activeTab === "notifications" ? "text-[#c084fc]" : "text-[#475569]"} />
                  Alert Preferences
@@ -152,7 +149,7 @@ export default function OperatorSettingsPage() {
               {activeTab === "profile" && (
                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="mb-8">
-                       <h2 className="text-[#e2e8f0] font-sans font-bold text-3xl">Operator Profile</h2>
+                       <h2 className="text-[#e2e8f0] font-sans font-bold text-3xl">Observer Profile</h2>
                        <p className="text-[#64748b] text-[10px] tracking-widest uppercase mt-2">Modify personnel identity credentials and contact node.</p>
                     </div>
 
@@ -194,51 +191,6 @@ export default function OperatorSettingsPage() {
                                className="bg-[#0c0d0f] border border-white/10 text-white p-4 font-mono text-sm focus:border-[#7be1ea] focus:ring-1 focus:ring-[#7be1ea] outline-none transition-all placeholder-white/20"
                                placeholder="h.vance@orbital.com" 
                              />
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-              )}
-
-              {activeTab === "security" && (
-                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="mb-8">
-                       <h2 className="text-[#a3e635] font-sans font-bold text-3xl">Security Matrix</h2>
-                       <p className="text-[#64748b] text-[10px] tracking-widest uppercase mt-2">Manage encryption keys and physical access parameters.</p>
-                    </div>
-
-                    <div className="flex flex-col gap-6">
-                       <div className="border border-white/5 bg-[#0c0d0f] p-6 rounded-sm flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                             <div className="p-3 bg-black border border-white/10 rounded-sm">
-                                <KeySquare size={24} className="text-[#a3e635]" />
-                             </div>
-                             <div className="flex flex-col gap-1">
-                                <span className="text-white font-bold text-sm tracking-widest">Master Passcode</span>
-                                <span className="text-[#64748b] text-[10px] font-mono tracking-widest">Last changed: {data.security.lastPasswordChange}</span>
-                             </div>
-                          </div>
-                          <button className="border border-[#a3e635]/30 text-[#a3e635] hover:bg-[#a3e635]/10 px-6 py-3 font-bold text-[10px] tracking-widest uppercase rounded-sm transition-colors">
-                             UPDATE KEY
-                          </button>
-                       </div>
-
-                       <div className="border border-white/5 bg-[#0c0d0f] p-6 rounded-sm flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                             <div className="p-3 bg-black border border-white/10 rounded-sm">
-                                <Fingerprint size={24} className="text-[#7be1ea]" />
-                             </div>
-                             <div className="flex flex-col gap-1">
-                                <span className="text-white font-bold text-sm tracking-widest">Biometric Authentication</span>
-                                <span className="text-[#64748b] text-[10px] font-mono tracking-widest">Require retinal/fingerprint scan for critical commands.</span>
-                             </div>
-                          </div>
-                          {/* TOGGLE */}
-                          <div 
-                             onClick={() => handleNestedToggle("security", "biometricEnabled")}
-                             className={`w-14 h-6 border rounded-full shrink-0 flex items-center px-1 cursor-pointer transition-colors ${data.security.biometricEnabled ? 'border-[#7be1ea] bg-[#7be1ea]/20' : 'border-white/20 bg-black'}`}
-                          >
-                             <div className={`w-4 h-4 bg-white rounded-full transition-transform ${data.security.biometricEnabled ? 'translate-x-7 bg-[#7be1ea]' : ''}`} />
                           </div>
                        </div>
                     </div>

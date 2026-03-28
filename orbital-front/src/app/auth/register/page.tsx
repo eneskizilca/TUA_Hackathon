@@ -3,8 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Terminal, Activity, Rocket, Info, ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 export default function RegisterPage() {
+  const [role, setRole] = useState<"OBSERVER" | "OPERATOR">("OBSERVER");
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 lg:p-12 relative overflow-hidden bg-astro-black">
       {/* Container */}
@@ -80,11 +83,17 @@ export default function RegisterPage() {
             
             {/* Nav Tabs */}
             <div className="flex h-24 mb-10 bg-[#1a1a1a] shadow-inner mb-12">
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 border-b-2 border-astro-cyan text-astro-cyan cursor-pointer transition-colors bg-[#1f1f1f]">
+              <div 
+                onClick={() => setRole("OBSERVER")}
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${role === "OBSERVER" ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" : "border-transparent text-astro-muted hover:text-white/80"}`}
+              >
                 <Eye size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OBSERVER</span>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-astro-muted cursor-pointer transition-colors hover:text-white/80">
+              <div 
+                onClick={() => setRole("OPERATOR")}
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${role === "OPERATOR" ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" : "border-transparent text-astro-muted hover:text-white/80"}`}
+              >
                 <Terminal size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OPERATOR</span>
               </div>
@@ -127,7 +136,7 @@ export default function RegisterPage() {
 
                 <div className="flex flex-col gap-3">
                   <label className="text-astro-muted text-[9px] font-mono tracking-[0.2em] uppercase">
-                    PASSWORD
+                    CONFIRM PASSWORD
                   </label>
                   <input 
                     type="password" 
