@@ -24,12 +24,16 @@ export default function LoginPage() {
       {/* Main Card */}
       <div className="w-full max-w-[420px] bg-[#0c0d0f] border-t-2 border-[#7be1ea] p-10 relative z-10 flex flex-col items-center">
         
-        {/* Logo Replacement (Can use same gif or CSS circle) */}
-        <div className="w-20 h-20 bg-black flex items-center justify-center mb-6 relative">
-             <div className="w-10 h-10 rounded-full border-2 border-white/80 absolute" />
-             <div className="w-14 h-14 rounded-full border border-[#7be1ea]/50 absolute" />
-             <div className="w-2 h-2 rounded-full bg-[#a3e635] absolute -left-1 top-1/2" />
-             <div className="w-2 h-2 rounded-full bg-[#7be1ea] absolute right-2 top-2" />
+        {/* Logo Placement */}
+        <div className="mb-6 flex justify-center">
+          <Image 
+            src="/astrologo.gif" 
+            alt="Logo" 
+            width={80} 
+            height={80} 
+            className="opacity-95 mix-blend-screen"
+            unoptimized
+          />
         </div>
 
         <h1 className="text-2xl font-bold text-white tracking-[0.4em] mb-3">
