@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-import { ChevronDown, Zap, ArrowLeft, Activity, MapPin, Eye } from "lucide-react";
+import { ChevronDown, Zap, Activity, MapPin, Eye } from "lucide-react";
 
 const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
 
@@ -16,19 +16,36 @@ export interface AuroraDataPoint {
   status: "CRITICAL" | "ELEVATED" | "MODERATE";
 }
 
+const translations = {
+  EN: {
+    about: "ABOUT US",
+    register: "REGISTER",
+    login: "SIGN IN",
+    matrixTitle: "AURORA MATRIX",
+    matrixDesc: "Live heat map generated from atmospheric ionization nodes. Analyzing the electromagnetic storm index targeting terrestrial and satellite assets.",
+    liveView: "LIVE IONOSPHERE VIEW (ARCTIC CIRCLE)",
+    awaiting: "Awaiting Incoming Telemetry from Polar Sensors..."
+  },
+  TR: {
+    about: "HAKKIMIZDA",
+    register: "KAYIT OL",
+    login: "GİRİŞ YAP",
+    matrixTitle: "AURORA MATRİSİ",
+    matrixDesc: "Atmosferik iyonizasyon düğümlerinden elde edilen canlı ısı haritası. Yeryüzü ve uydu donanımlarını hedefleyen elektromanyetik fırtına indeksi analiz ediliyor.",
+    liveView: "CANLI İYONOSFER GÖRÜNÜMÜ (KUZEY KUTUP DAİRESİ)",
+    awaiting: "Kutup Sensörlerinden Telemetri Bekleniyor..."
+  }
+};
+
 export default function AuroraPage() {
   const [data, setData] = useState<AuroraDataPoint[] | null>(null);
+  const [lang, setLang] = useState<"EN" | "TR">("EN");
+  const [langOpen, setLangOpen] = useState(false);
+  const t = translations[lang];
 
   useEffect(() => {
-    // --- BACKEND API FETCH LOGIC ---
-    // Will fetch real active aurora lights data coordinates from FastAPI.
     async function fetchAuroraData() {
       try {
-        // const response = await fetch('/api/aurora-heatmap');
-        // const result = await response.json();
-        // setData(result.data);
-
-        // Mock-Free Pattern: Provide a robust skeleton before actual data payload arrives
         setData([]);
       } catch (error) {
         console.error("Failed to load aurora map data", error);
@@ -36,6 +53,13 @@ export default function AuroraPage() {
     }
     fetchAuroraData();
   }, []);
+
+  const handleLangSelect = (code: string) => {
+    if (code === "TR" || code === "EN") {
+      setLang(code as "EN" | "TR");
+    }
+    setLangOpen(false);
+  };
 
   if (!data) return (
      <div className="min-h-screen bg-[#050607] flex flex-col items-center justify-center text-[#c084fc] font-mono gap-4 tracking-widest uppercase text-sm">
@@ -55,16 +79,32 @@ export default function AuroraPage() {
         </div>
 
         <nav className="flex items-center gap-8 text-[11px] font-bold tracking-widest uppercase">
-          <Link href="/#about" className="hover:text-[#7be1ea] transition-colors border-b border-transparent hover:border-[#7be1ea] pb-1">ABOUT US</Link>
+          <Link href="/#about" className="hover:text-[#7be1ea] transition-colors border-b border-transparent hover:border-[#7be1ea] pb-1">{t.about}</Link>
           
-          {/* ACTIVE AURORA BUTTON - ALWAYS SHINING ON THIS PAGE */}
           <div className="relative overflow-hidden px-5 py-2.5 flex items-center gap-2 rounded-sm text-white shadow-[0_0_20px_rgba(192,132,252,0.4)]">
             <div className="absolute inset-0 bg-gradient-to-r from-[#7be1ea] via-[#c084fc] to-[#a3e635] bg-[length:200%_auto] animate-[gradientFlow_3s_linear_infinite]" />
             <Zap size={14} className="relative z-10" /> <span className="relative z-10">AURORA</span>
           </div>
 
-          <Link href="/auth/register" className="hover:text-white transition-colors border-b border-transparent hover:border-white pb-1">REGISTER</Link>
-          <Link href="/auth/login" className="hover:text-[#a3e635] transition-colors border-b border-transparent hover:border-[#a3e635] pb-1">SIGN IN</Link>
+          <Link href="/auth/register" className="hover:text-white transition-colors border-b border-transparent hover:border-white pb-1">{t.register}</Link>
+          <Link href="/auth/login" className="hover:text-[#a3e635] transition-colors border-b border-transparent hover:border-[#a3e635] pb-1">{t.login}</Link>
+          
+          {/* LANGUAGE DROPDOWN */}
+          <div className="relative">
+             <div onClick={() => setLangOpen(!langOpen)} className="flex items-center gap-2 border border-white/20 px-3 py-1.5 rounded-sm hover:bg-white/5 cursor-pointer transition-colors text-white w-14 justify-between">
+               <span>{lang === "TR" ? "🇹🇷" : "🇬🇧"} {lang}</span>
+               <ChevronDown size={14} className={`transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+             </div>
+             {langOpen && (
+                <div className="absolute top-full right-0 mt-2 w-32 bg-[#0a0b0d] border border-white/10 rounded-sm py-1 flex flex-col z-50 shadow-2xl">
+                   <button onClick={() => handleLangSelect("TR")} className={`flex items-center justify-between px-3 py-2.5 hover:bg-white/10 text-white text-xs text-left ${lang === "TR" ? 'bg-white/5 text-[#7be1ea]' : ''}`}><span className="flex items-center gap-2">🇹🇷 TR</span> <span className="text-[#64748b] text-[9px]">TUR</span></button>
+                   <button onClick={() => handleLangSelect("EN")} className={`flex items-center justify-between px-3 py-2.5 hover:bg-white/10 text-white text-xs text-left ${lang === "EN" ? 'bg-white/5 text-[#7be1ea]' : ''}`}><span className="flex items-center gap-2">🇬🇧 EN</span> <span className="text-[#64748b] text-[9px]">ENG</span></button>
+                   <button onClick={() => handleLangSelect("RU")} className="flex items-center justify-between px-3 py-2.5 hover:bg-white/10 text-white text-xs text-left opacity-30 cursor-not-allowed" title="Mock Module"><span className="flex items-center gap-2">🇷🇺 RU</span> <span className="text-[#64748b] text-[9px]">RUS</span></button>
+                   <button onClick={() => handleLangSelect("ZH")} className="flex items-center justify-between px-3 py-2.5 hover:bg-white/10 text-white text-xs text-left opacity-30 cursor-not-allowed" title="Mock Module"><span className="flex items-center gap-2">🇨🇳 ZH</span> <span className="text-[#64748b] text-[9px]">ZHO</span></button>
+                   <button onClick={() => handleLangSelect("JA")} className="flex items-center justify-between px-3 py-2.5 hover:bg-white/10 text-white text-xs text-left opacity-30 cursor-not-allowed" title="Mock Module"><span className="flex items-center gap-2">🇯🇵 JA</span> <span className="text-[#64748b] text-[9px]">JPN</span></button>
+                </div>
+             )}
+          </div>
         </nav>
       </header>
 
@@ -74,11 +114,11 @@ export default function AuroraPage() {
         <aside className="w-[400px] bg-[#0a0b0d] border-r border-white/5 flex flex-col py-8 overflow-y-auto shrink-0 z-20">
            <div className="px-8 flex items-center gap-3 text-[#c084fc] mb-8">
               <Activity size={20} />
-              <h2 className="font-sans font-black text-2xl tracking-tight text-white uppercase mt-1">AURORA MAENIX</h2>
+              <h2 className="font-sans font-black text-2xl tracking-tight text-white uppercase mt-1">{t.matrixTitle}</h2>
            </div>
 
            <p className="px-8 text-[#475569] text-[10px] tracking-widest uppercase leading-relaxed mb-6">
-              Live heat map generated from atmospheric ionization nodes. Analyzing the electromagnetic storm index targeting terrestrial and satellite assets.
+              {t.matrixDesc}
            </p>
 
            <div className="px-8 flex flex-col gap-4">
@@ -86,7 +126,7 @@ export default function AuroraPage() {
                  <div className="flex flex-col items-center justify-center py-12 opacity-50 border border-dashed border-[#c084fc]/30 rounded-sm gap-4 mt-4">
                     <Activity size={24} className="text-[#c084fc] animate-pulse" />
                     <span className="text-[10px] tracking-widest text-[#c084fc] uppercase font-bold text-center px-6 leading-relaxed">
-                       Awaiting Incoming Telemetry from Polar Sensors...
+                       {t.awaiting}
                     </span>
                  </div>
               )}
@@ -181,7 +221,7 @@ export default function AuroraPage() {
            </div>
            
            <div className="absolute top-6 right-6 flex items-center gap-3 bg-black/50 border border-white/10 backdrop-blur-sm px-4 py-2 rounded-sm text-[10px] tracking-widest text-[#a3e635] uppercase font-bold">
-              <Eye size={12} className="animate-pulse" /> LIVE IONOSPHERE VIEW (ARCTIC CIRCLE)
+              <Eye size={12} className="animate-pulse" /> {t.liveView}
            </div>
         </section>
 
