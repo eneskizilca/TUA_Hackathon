@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { Bell, Settings, User, ChevronDown, Satellite, FolderClosed, TerminalSquare, HelpCircle, FileText, Waves } from "lucide-react";
 
@@ -146,29 +147,30 @@ export default function OperatorDashboard() {
 
            {/* Menu Items */}
            <div className="flex flex-col">
-              <div className="bg-[#15171b] border-l-[3px] border-[#a3e635] px-8 py-5 flex items-center gap-5 text-[#a3e635] cursor-pointer group">
-                 <Satellite size={20} className="group-hover:scale-110 transition-transform" />
-                 <span className="font-bold tracking-[0.15em] text-sm">FLEET OVERVIEW</span>
-              </div>
-              <div className="px-8 py-5 flex items-center gap-5 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
-                 <FolderClosed size={20} className="group-hover:text-white transition-colors" />
-                 <span className="font-bold tracking-[0.15em] text-sm group-hover:text-white transition-colors">ASSET REGISTRY</span>
-              </div>
-              <div className="px-8 py-5 flex items-center gap-5 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
-                 <TerminalSquare size={20} className="group-hover:text-white transition-colors" />
-                 <span className="font-bold tracking-[0.15em] text-sm group-hover:text-white transition-colors">SYSTEM LOGS</span>
-              </div>
+              <Link href="/dashboard/operator" className="bg-[#15171b] border-l-[3px] border-[#7be1ea] px-8 py-5 flex items-center gap-5 text-[#7be1ea] cursor-pointer group">
+                 <Satellite size={18} />
+                 <span className="font-bold tracking-[0.15em] text-xs uppercase">FLEET OVERVIEW</span>
+              </Link>
+              <Link href="/operator/assets" className="px-8 py-5 flex items-center gap-5 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
+                 <FolderClosed size={18} className="group-hover:text-white transition-colors" />
+                 <span className="font-bold tracking-[0.15em] text-xs group-hover:text-white transition-colors uppercase">ASSET REGISTRY</span>
+              </Link>
+              <Link href="/operator/logs" className="px-8 py-5 flex items-center gap-5 text-[#64748b] hover:bg-white/5 cursor-pointer transition-colors group border-l-[3px] border-transparent">
+                 <TerminalSquare size={18} className="group-hover:text-white transition-colors" />
+                 <span className="font-bold tracking-[0.15em] text-xs group-hover:text-white transition-colors uppercase">SYSTEM LOGS</span>
+              </Link>
            </div>
 
            {/* Spacer */}
            <div className="flex-1" />
 
            {/* Bottom Links */}
+           <div className="px-8 w-full pb-4">
+              <Link href="/operator/assets/new" className="w-full bg-[#7be1ea] text-black font-extrabold text-[10px] tracking-[0.2em] py-4 rounded-sm hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all flex items-center justify-center gap-2">
+                 <span>+ REGISTER NEW ASSET</span>
+              </Link>
+           </div>
            <div className="px-8 flex flex-col gap-6 w-full">
-              <button className="w-full bg-[#7be1ea] text-black font-extrabold text-xs tracking-[0.2em] py-4 rounded-sm hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all">
-                 REGISTER NEW ASSET
-              </button>
-              
               <div className="flex gap-3 items-center text-[#64748b] hover:text-white cursor-pointer transition-colors">
                  <HelpCircle size={14} className="opacity-70" />
                  <span className="text-[11px] tracking-widest font-bold">SUPPORT</span>
