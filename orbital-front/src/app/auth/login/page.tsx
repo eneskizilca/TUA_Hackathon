@@ -1,0 +1,116 @@
+"use client";
+
+import { AtSign, Lock, ArrowRight } from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+
+export default function LoginPage() {
+  return (
+    <main className="min-h-screen relative flex items-center justify-center bg-[#070809] p-4 text-[0.7rem] text-slate-400 overflow-hidden font-mono tracking-widest uppercase">
+      {/* Background Pattern - Grid */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-10"
+        style={{
+          backgroundImage: "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+          backgroundSize: "40px 40px"
+        }}
+      />
+      
+      {/* Background Pattern - Circles */}
+      <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full border border-white/5 pointer-events-none" />
+      <div className="absolute top-[30%] -right-[15%] w-[60vw] h-[60vw] rounded-full border border-white/5 pointer-events-none" />
+
+      {/* Main Card */}
+      <div className="w-full max-w-[420px] bg-[#0c0d0f] border-t-2 border-[#7be1ea] p-10 relative z-10 flex flex-col items-center">
+        
+        {/* Logo Replacement (Can use same gif or CSS circle) */}
+        <div className="w-20 h-20 bg-black flex items-center justify-center mb-6 relative">
+             <div className="w-10 h-10 rounded-full border-2 border-white/80 absolute" />
+             <div className="w-14 h-14 rounded-full border border-[#7be1ea]/50 absolute" />
+             <div className="w-2 h-2 rounded-full bg-[#a3e635] absolute -left-1 top-1/2" />
+             <div className="w-2 h-2 rounded-full bg-[#7be1ea] absolute right-2 top-2" />
+        </div>
+
+        <h1 className="text-2xl font-bold text-white tracking-[0.4em] mb-3">
+          ORBITAL SENSE
+        </h1>
+        <div className="text-[#3a8a92] text-[0.6rem] tracking-[0.15em] mb-8 font-bold text-center">
+          BEYOND THE ATMOSPHERE. PREDICTING THE ANOMALY.
+        </div>
+
+        <div className="text-[#5a6a75] text-[0.6rem] tracking-[0.2em] mb-10 text-center">
+          SECURE TERMINAL ACCESS
+        </div>
+
+        <form className="w-full space-y-8" onSubmit={(e) => e.preventDefault()}>
+          <div className="relative group">
+            <label className="text-[0.65rem] text-[#5a6a75] tracking-widest mb-2 block font-bold">
+              IDENTIFIER [MAIL]
+            </label>
+            <div className="relative flex items-center border-b border-white/10 group-focus-within:border-[#7be1ea] transition-colors pb-2">
+              <AtSign className="w-4 h-4 text-[#5a6a75] mr-4" />
+              <input 
+                type="text" 
+                placeholder="orbital_id@astro.sys" 
+                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-sm tracking-wider" 
+              />
+            </div>
+          </div>
+
+          <div className="relative group">
+            <label className="text-[0.65rem] text-[#5a6a75] tracking-widest mb-2 block font-bold">
+              KEY_PHRASE [PASSWORD]
+            </label>
+            <div className="relative flex items-center border-b border-white/10 group-focus-within:border-[#7be1ea] transition-colors pb-2">
+              <Lock className="w-4 h-4 text-[#5a6a75] mr-4" />
+              <input 
+                type="password" 
+                placeholder="••••••••••••" 
+                className="bg-transparent w-full text-white placeholder-[#3a4a55] outline-none text-lg tracking-[0.3em]" 
+              />
+            </div>
+          </div>
+
+          <button className="w-full bg-[#7be1ea] text-black font-extrabold tracking-[0.25em] text-[0.8rem] py-4 flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.99] transition-all mt-6">
+            <span>SIGN IN</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </form>
+
+        <div className="mt-8 text-[0.6rem] tracking-widest text-[#5a6a75] hover:text-white cursor-pointer transition-colors">
+          FORGOT PASSWORD
+        </div>
+
+        <div className="mt-8 text-[0.65rem] tracking-widest text-[#5a6a75]">
+          DON'T HAVE AN ACCOUNT? <Link href="/auth/register" className="text-[#7be1ea] hover:text-white transition-colors">SIGN UP</Link>
+        </div>
+
+        <div className="w-full h-px bg-white/5 my-8" />
+
+        <div className="w-full flex justify-between items-end text-[0.55rem] tracking-widest text-[#4a5a65]">
+          <div className="space-y-1">
+            <div>NODE: 401.ALPHA</div>
+            <div>ENCRYPTION: AES-256-GCM</div>
+          </div>
+          <div className="flex items-center gap-2 text-[#a3e635]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#a3e635]" />
+            SYSTEM ONLINE
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Area */}
+      <div className="absolute bottom-6 w-full px-10 flex justify-between items-center text-[0.55rem] text-[#4a5a65] tracking-[0.2em] z-0">
+         <div>
+            © 2024 ORBITAL SENTINEL SYSTEMS. ALL RIGHTS RESERVED.
+         </div>
+         <div className="flex gap-8">
+            <span className="hover:text-white cursor-pointer transition-colors">PRIVACY</span>
+            <span className="hover:text-white cursor-pointer transition-colors">SECURITY</span>
+            <span className="hover:text-white cursor-pointer transition-colors">TERMINAL_LOGS</span>
+         </div>
+      </div>
+    </main>
+  );
+}
