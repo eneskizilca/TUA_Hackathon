@@ -1,24 +1,38 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from enum import Enum
+
+
+class UserRole(str, Enum):
+    OBSERVER = "OBSERVER"
+    OPERATOR = "OPERATOR"
 
 
 # --- Auth ---
 class UserCreate(BaseModel):
+    full_name: Optional[str] = None
     email: EmailStr
     password: str
-    full_name: Optional[str] = None
+    role: UserRole = UserRole.OBSERVER
 
 
 class UserOut(BaseModel):
     id: int
-    email: EmailStr
     full_name: Optional[str]
+    email: EmailStr
+    role: UserRole
     is_active: bool
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
 
 
 class Token(BaseModel):
@@ -28,6 +42,10 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+
+class RecoverRequest(BaseModel):
+    email: EmailStr
 
 
 # --- Satellite ---
