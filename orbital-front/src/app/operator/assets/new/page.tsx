@@ -30,7 +30,7 @@ export default function NewAssetPage() {
                 </div>
                 <div className="flex items-center gap-6 text-[#475569]">
                     <Bell size={18} className="hover:text-white cursor-pointer transition-colors" />
-                    <Settings size={18} className="hover:text-white cursor-pointer transition-colors" />
+                    <Link href="/operator/settings"><Settings size={18} className="hover:text-white cursor-pointer transition-colors" /></Link>
                     <div className="w-8 h-8 bg-[#1e293b] rounded flex items-center justify-center border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors">
                         <User size={18} className="text-white/60" />
                     </div>

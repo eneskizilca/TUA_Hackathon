@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Eye, Terminal, Activity, Rocket, Info, ArrowRight } from "lucide-react";
 import { useState } from "react";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -91,6 +92,11 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+=======
+
+export default function RegisterPage() {
+  const [role, setRole] = useState<"OBSERVER" | "OPERATOR">("OBSERVER");
+>>>>>>> 49bcf0ee9431225e5f3b6fcc1ecd8451c3f93611
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 lg:p-12 relative overflow-hidden bg-astro-black">
@@ -169,22 +175,30 @@ export default function RegisterPage() {
             <div className="flex h-24 mb-10 bg-[#1a1a1a] shadow-inner mb-12">
               <div 
                 onClick={() => setRole("OBSERVER")}
+<<<<<<< HEAD
                 className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
                   role === "OBSERVER" 
                     ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
                     : "border-transparent text-astro-muted hover:text-white/80"
                 }`}
+=======
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${role === "OBSERVER" ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" : "border-transparent text-astro-muted hover:text-white/80"}`}
+>>>>>>> 49bcf0ee9431225e5f3b6fcc1ecd8451c3f93611
               >
                 <Eye size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OBSERVER</span>
               </div>
               <div 
                 onClick={() => setRole("OPERATOR")}
+<<<<<<< HEAD
                 className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
                   role === "OPERATOR" 
                     ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
                     : "border-transparent text-astro-muted hover:text-white/80"
                 }`}
+=======
+                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${role === "OPERATOR" ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" : "border-transparent text-astro-muted hover:text-white/80"}`}
+>>>>>>> 49bcf0ee9431225e5f3b6fcc1ecd8451c3f93611
               >
                 <Terminal size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OPERATOR</span>

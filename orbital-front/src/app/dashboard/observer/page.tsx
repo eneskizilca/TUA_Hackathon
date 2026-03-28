@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Bell, Settings, User, Shield, Radio, Activity, Globe } from "lucide-react";
 
 // --- TİPLER (TYPES) ---
@@ -133,7 +134,7 @@ export default function ObserverDashboard() {
         </div>
         <div className="flex items-center gap-8 text-[#475569]">
           <Bell size={24} className="hover:text-white cursor-pointer transition-colors" />
-          <Settings size={24} className="hover:text-white cursor-pointer transition-colors" />
+          <Link href="/dashboard/observer/settings"><Settings size={24} className="hover:text-white cursor-pointer transition-colors" /></Link>
           <div className="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center border border-white/10 overflow-hidden cursor-pointer hover:bg-white/10 transition-colors">
             <User size={24} className="text-white/60" />
           </div>
