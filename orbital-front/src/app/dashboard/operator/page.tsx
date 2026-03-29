@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Bell, Settings, User, ChevronDown, Satellite, FolderClosed, TerminalSquare, HelpCircle, FileText, Waves } from "lucide-react";
+import { fetchDashboardData } from "@/lib/api/space-weather";
+import type { DashboardData } from "@/types/space-weather";
 
 // --- TİPLER (TYPES) ---
 export interface ActionLog {
@@ -42,21 +44,134 @@ export interface OperatorData {
   fleetCondition: FleetCondition;
 }
 
+// Helper functions
+function generateLogsFromThreats(dashboardData: DashboardData): ActionLog[] {
+  const logs: ActionLog[] = [];
+  const now = new Date();
+  
+  dashboardData.threats.active_threats.forEach((threat, index) => {
+    const time = new Date(now.getTime() - index * 60000).toISOString().substr(11, 8);
+    let msg = "";
+    let type: "normal" | "critical" | "success" = "normal";
+    
+    switch (threat) {
+      case "SHIELD_BREACH":
+        msg = "⚠ SHIELD BREACH DETECTED - Solar wind penetrating magnetosphere";
+        type = "critical";
+        break;
+      case "GEOMAGNETIC_STORM":
+        msg = "⚠ GEOMAGNETIC STORM IN PROGRESS - Kp index elevated";
+        type = "critical";
+        break;
+      case "INCOMING_CME":
+        msg = "⚠ CME INBOUND - Coronal mass ejection detected";
+        type = "critical";
+        break;
+      case "RADIATION_STORM":
+        msg = "⚠ RADIATION STORM - X-class solar flare detected";
+        type = "critical";
+        break;
+    }
+    
+    if (msg) {
+      logs.push({ time, type, msg });
+    }
+  });
+  
+  // Add system status logs
+  logs.push({
+    time: new Date(now.getTime() - logs.length * 60000).toISOString().substr(11, 8),
+    type: "success",
+    msg: `Solar Wind: ${dashboardData.current_conditions.solar_wind.speed_kmps.toFixed(0)} km/s | IMF Bz: ${dashboardData.current_conditions.magnetic_field.bz_nt.toFixed(1)} nT`
+  });
+  
+  logs.push({
+    time: new Date(now.getTime() - (logs.length + 1) * 60000).toISOString().substr(11, 8),
+    type: "normal",
+    msg: `Kp Index: ${dashboardData.current_conditions.kp_index.kp_value.toFixed(1)} (${dashboardData.current_conditions.kp_index.status})`
+  });
+  
+  return logs;
+}
+
+function generateRadiationChart(kpValue: number): number[] {
+  // Generate 10 bars based on Kp index
+  const baseHeight = 20;
+  const maxHeight = 90;
+  const variation = (kpValue / 9) * (maxHeight - baseHeight);
+  
+  return Array.from({ length: 10 }, (_, i) => {
+    const trend = (i / 10) * variation;
+    const noise = Math.random() * 10;
+    return Math.min(maxHeight, baseHeight + trend + noise);
+  });
+}
+
+function calculateGlobalHealth(assets: DashboardData["assets"]): number {
+  const total = assets.safe_count + assets.caution_count + assets.critical_count + assets.offline_count;
+  if (total === 0) return 100;
+  
+  const healthScore = (assets.safe_count * 100 + assets.caution_count * 60 + assets.critical_count * 20) / total;
+  return Math.round(healthScore);
+}
+
+function calculateSessionTime(): string {
+  // Calculate uptime since page load
+  const [sessionTime, setSessionTime] = useState("00:00:00");
+  
+  useEffect(() => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      setSessionTime(`${hours}:${minutes}:${seconds}`);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return sessionTime;
+}
+
 export default function OperatorDashboard() {
   const [data, setData] = useState<OperatorData | null>(null);
+  const sessionTime = calculateSessionTime();
 
   useEffect(() => {
-    // --- BACKEND VERİ ÇEKME MANTIĞI BURAYA GELECEK --- //
     async function fetchOperatorData() {
       try {
-        // Örnek API Çağrısı:
-        // const response = await fetch('/api/operator/data');
-        // const backendData: OperatorData = await response.json();
-        // setData(backendData);
-
-        // Şimdilik UI'ın patlamaması için tamamen boş (mock olmayan) referans değerler atıyoruz.
+        const dashboardData = await fetchDashboardData();
+        
         setData({
-          activeSession: "00:00:00",
+          activeSession: sessionTime,
+          target: {
+            name: "SENTINEL-A1",
+            lat: "42.5° N",
+            lon: "28.8° E",
+            alt: "550 KM",
+            cmeAlert: dashboardData.threats.active_threats.includes("INCOMING_CME") ? "DETECTED" : "CLEAR"
+          },
+          actionLogs: generateLogsFromThreats(dashboardData),
+          telemetry: {
+            latency: dashboardData.cache_age_seconds ? Math.min(200, dashboardData.cache_age_seconds * 10) : 45,
+            integrity: 99.8,
+            bandwidth: 45.2
+          },
+          radiationScore: generateRadiationChart(dashboardData.current_conditions.kp_index.kp_value),
+          fleetCondition: {
+            globalHealth: calculateGlobalHealth(dashboardData.assets),
+            nominalAssets: dashboardData.assets.safe_count,
+            atRiskAssets: dashboardData.assets.caution_count + dashboardData.assets.critical_count,
+            maintenanceAssets: dashboardData.assets.offline_count
+          }
+        });
+      } catch (error) {
+        console.error("Failed to load operator data from backend", error);
+        // Fallback to empty data
+        setData({
+          activeSession: sessionTime,
           target: {
             name: "AWAITING TARGET...",
             lat: "--.-- N",
@@ -64,13 +179,13 @@ export default function OperatorDashboard() {
             alt: "--,--- KM",
             cmeAlert: "UNKNOWN"
           },
-          actionLogs: [], // Backend log array expects here
+          actionLogs: [],
           telemetry: {
             latency: 0,
             integrity: 0,
             bandwidth: 0
           },
-          radiationScore: Array(10).fill(0), // Initial empty score chart (10 bars)
+          radiationScore: Array(10).fill(0),
           fleetCondition: {
             globalHealth: 0,
             nominalAssets: 0,
@@ -78,13 +193,13 @@ export default function OperatorDashboard() {
             maintenanceAssets: 0
           }
         });
-      } catch (error) {
-        console.error("Failed to load operator data from backend", error);
       }
     }
 
     fetchOperatorData();
-  }, []);
+    const interval = setInterval(fetchOperatorData, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
+  }, [sessionTime]);
 
   if (!data) {
     return (

@@ -77,7 +77,7 @@ export default function LandingPage() {
       <div className="absolute top-[120vh] right-1/4 w-96 h-96 bg-[#a3e635]/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
       {/* HEADER */}
-      <header className="h-24 flex items-center justify-between px-10 relative z-50 bg-[#050607]/80 backdrop-blur-md sticky top-0 border-b border-white/5">
+      <header className="h-24 flex items-center justify-between px-10 relative z-50 bg-[#050607]/80 backdrop-blur-md sticky top-0 border-b border-white/5 mt-4">
         <div className="flex items-center gap-4">
           <Image src="/astrologo.gif" alt="Orbital Sense Logo" width={48} height={48} className="mix-blend-screen" unoptimized />
           <span className="text-white font-black text-2xl tracking-[0.2em] font-sans">ORBITAL SENSE</span>

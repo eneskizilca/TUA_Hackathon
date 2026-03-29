@@ -1,3 +1,4 @@
+# Space weather schemas package
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
@@ -86,3 +87,4 @@ class TelemetryOut(BaseModel):
 
     class Config:
         from_attributes = True
+
