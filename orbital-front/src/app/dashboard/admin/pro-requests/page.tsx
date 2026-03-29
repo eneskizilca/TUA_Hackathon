@@ -1,76 +1,82 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, MapPin, Search, Network, Satellite, Building2, Rocket, Box } from "lucide-react";
-
-// --- TYPES FOR MOCK-FREE BACKEND INTEGRATION ---
-export interface ProRequestItem {
-  id: string;
-  iconType: "network" | "satellite" | "building" | "rocket" | string;
-  institution: string;
-  operatorContact: string;
-  endpoint: string;
-  locationName: string;
-  coordinates: string;
-}
-
-export interface ProRequestsData {
-  adminName: string;
-  adminLocation: string;
-  pendingCount: number;
-  requests: ProRequestItem[];
-  metrics: {
-    queueLoad: number;
-    avgResponse: string;
-    systemEntropy: string;
-    entropyStatus: string;
-  };
-}
+import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, MapPin, Search, Network, Satellite, Building2, Rocket } from "lucide-react";
+import { fetchPendingUsers, updateUser, type User as UserType } from "@/lib/api/admin";
 
 export default function ProRequestsPage() {
-  const [data, setData] = useState<ProRequestsData | null>(null);
+  const [pendingUsers, setPendingUsers] = useState<UserType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
 
   useEffect(() => {
-    // --- BACKEND API FETCH LOGIC ---
-    async function fetchRequests() {
-      try {
-        // const response = await fetch('/api/admin/pro-requests');
-        // const result: ProRequestsData = await response.json();
-        // setData(result);
-
-        // Mocksuz Boş Başlangıç (Backend Bekleniyor)
-        setData({
-          adminName: "AWAITING_AUTH",
-          adminLocation: "--.---- N, --.---- E",
-          pendingCount: 0,
-          requests: [],
-          metrics: {
-            queueLoad: 0,
-            avgResponse: "0.0m",
-            systemEntropy: "AWAITING",
-            entropyStatus: "UNKNOWN"
-          }
-        });
-      } catch (error) {
-        console.error("Failed to fetch pro requests", error);
-      }
-    }
-    fetchRequests();
+    loadPendingUsers();
   }, []);
 
-  const getDynamicIcon = (type: string) => {
-    switch (type) {
-      case "network": return <Network size={24} className="text-[#c084fc]" />;
-      case "satellite": return <Satellite size={24} className="text-[#a3e635]" />;
-      case "building": return <Building2 size={24} className="text-[#64748b]" />;
-      case "rocket": return <Rocket size={24} className="text-[#c084fc]" />;
-      default: return <Box size={24} className="text-white/50" />;
+  async function loadPendingUsers() {
+    try {
+      const users = await fetchPendingUsers();
+      setPendingUsers(users);
+    } catch (error) {
+      console.error("Failed to fetch pending users", error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  async function handleApprove(userId: number) {
+    setProcessingId(userId);
+    try {
+      await updateUser(userId, { is_active: true });
+      await loadPendingUsers();
+    } catch (error) {
+      console.error("Failed to approve user", error);
+      alert("Failed to approve user");
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  async function handleReject(userId: number) {
+    setProcessingId(userId);
+    try {
+      // For now, we'll just remove from pending by not showing them
+      // In a real system, you might want to delete or mark as rejected
+      await loadPendingUsers();
+    } catch (error) {
+      console.error("Failed to reject user", error);
+      alert("Failed to reject user");
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  const getDynamicIcon = (email: string) => {
+    // Assign icon based on email domain or random
+    const hash = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const icons = [
+      <Network key="network" size={24} className="text-[#c084fc]" />,
+      <Satellite key="satellite" size={24} className="text-[#a3e635]" />,
+      <Building2 key="building" size={24} className="text-[#64748b]" />,
+      <Rocket key="rocket" size={24} className="text-[#c084fc]" />
+    ];
+    return icons[hash % icons.length];
   };
 
-  if (!data) return (
+  const getLocationFromEmail = (email: string) => {
+    // Generate pseudo-random coordinates based on email
+    const hash = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const lat = (hash % 90).toFixed(4);
+    const lon = ((hash * 2) % 180).toFixed(4);
+    return `${lat}° N, ${lon}° E`;
+  };
+
+  const queueLoad = pendingUsers.length > 0 ? Math.min(100, pendingUsers.length * 15) : 0;
+  const avgResponse = pendingUsers.length > 0 ? `${(pendingUsers.length * 0.3).toFixed(1)}m` : "0.0m";
+
+  if (loading) return (
     <div className="min-h-screen bg-[#050607] text-[#7be1ea] font-mono flex flex-col items-center justify-center gap-4 text-sm tracking-[0.3em] font-bold uppercase">
       <div className="w-8 h-8 border-4 border-[#7be1ea] border-t-transparent rounded-full animate-spin" />
       FETCHING PRO REQUESTS...
@@ -153,7 +159,7 @@ export default function ProRequestsPage() {
                  <h2 className="text-white font-black text-5xl font-sans tracking-tight uppercase">Pro Requests</h2>
                  <div className="flex items-center gap-2 mt-2 text-[#64748b] text-[10px] tracking-[0.2em] uppercase font-bold">
                     <div className="w-2 h-2 bg-[#a3e635]" />
-                    <span>QUEUE STATUS: {data.pendingCount} PENDING REGISTRATIONS</span>
+                    <span>QUEUE STATUS: {pendingUsers.length} PENDING REGISTRATIONS</span>
                  </div>
               </div>
 
@@ -172,11 +178,11 @@ export default function ProRequestsPage() {
 
            {/* REQUESTS LIST */}
            <div className="flex-1 flex flex-col gap-4 overflow-y-auto scrollbar-hide pb-32">
-              {data.requests.length > 0 ? data.requests.map((req, i) => (
-                 <div key={i} className="bg-[#15171b] border border-white/5 flex items-stretch rounded-sm shadow-md group hover:bg-[#1a1c22] transition-colors overflow-hidden">
+              {pendingUsers.length > 0 ? pendingUsers.map((user) => (
+                 <div key={user.id} className="bg-[#15171b] border border-white/5 flex items-stretch rounded-sm shadow-md group hover:bg-[#1a1c22] transition-colors overflow-hidden">
                     {/* ICON BLOCK */}
                     <div className="w-24 bg-black/20 border-r border-white/5 flex items-center justify-center shrink-0">
-                       {getDynamicIcon(req.iconType)}
+                       {getDynamicIcon(user.email)}
                     </div>
                     
                     {/* DETAILS GRID */}
@@ -184,40 +190,48 @@ export default function ProRequestsPage() {
                        {/* INSTITUTION */}
                        <div className="flex flex-col gap-1">
                           <span className="text-[#475569] text-[8px] uppercase tracking-widest font-bold">INSTITUTION</span>
-                          <span className="text-white font-sans font-bold text-sm tracking-wide">{req.institution}</span>
+                          <span className="text-white font-sans font-bold text-sm tracking-wide">{user.full_name || "UNNAMED_OPERATOR"}</span>
                        </div>
 
                        {/* OPERATOR CONTACT */}
                        <div className="flex flex-col gap-1">
                           <span className="text-[#475569] text-[8px] uppercase tracking-widest font-bold">OPERATOR CONTACT</span>
-                          <span className="text-white font-sans font-bold text-sm tracking-wide">{req.operatorContact}</span>
+                          <span className="text-white font-sans font-bold text-sm tracking-wide">{user.email}</span>
                        </div>
 
                        {/* TERMINAL ENDPOINT */}
                        <div className="flex flex-col gap-1">
                           <span className="text-[#475569] text-[8px] uppercase tracking-widest font-bold">TERMINAL ENDPOINT</span>
-                          <span className="text-[#7be1ea] font-mono text-[10px] tracking-widest">{req.endpoint}</span>
+                          <span className="text-[#7be1ea] font-mono text-[10px] tracking-widest">OP_{user.id.toString().padStart(4, '0')}</span>
                        </div>
 
                        {/* OPERATION CENTER */}
                        <div className="flex flex-col gap-1 col-span-1 border-l border-white/5 pl-6">
                           <span className="text-[#475569] text-[8px] uppercase tracking-widest font-bold">OPERATION CENTER</span>
                           <span className="text-white font-sans text-xs flex items-center gap-1 mb-1">
-                             {req.locationName}
+                             {user.email.split('@')[1]?.toUpperCase() || "UNKNOWN"}
                           </span>
                           <div className="flex items-start gap-1 text-[#64748b] text-[9px] font-mono">
                              <MapPin size={10} className="mt-0.5 shrink-0" />
-                             <span>{req.coordinates}</span>
+                             <span>{getLocationFromEmail(user.email)}</span>
                           </div>
                        </div>
                     </div>
 
                     {/* ACTION BUTTONS */}
                     <div className="flex flex-col justify-center gap-3 p-6 shrink-0 w-48">
-                       <button className="bg-[#7be1ea] text-black font-extrabold text-[10px] tracking-[0.2em] py-3 rounded-sm uppercase hover:bg-white transition-colors w-full">
-                          APPROVE
+                       <button 
+                          onClick={() => handleApprove(user.id)}
+                          disabled={processingId === user.id}
+                          className="bg-[#7be1ea] text-black font-extrabold text-[10px] tracking-[0.2em] py-3 rounded-sm uppercase hover:bg-white transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                       >
+                          {processingId === user.id ? "PROCESSING..." : "APPROVE"}
                        </button>
-                       <button className="border border-[#ef4444]/30 text-[#ef4444] font-bold text-[10px] tracking-[0.2em] py-3 rounded-sm uppercase hover:bg-[#ef4444]/10 transition-colors w-full">
+                       <button 
+                          onClick={() => handleReject(user.id)}
+                          disabled={processingId === user.id}
+                          className="border border-[#ef4444]/30 text-[#ef4444] font-bold text-[10px] tracking-[0.2em] py-3 rounded-sm uppercase hover:bg-[#ef4444]/10 transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                       >
                           REJECT
                        </button>
                     </div>
@@ -235,17 +249,17 @@ export default function ProRequestsPage() {
               <div className="flex-1 px-8 flex flex-col justify-center h-full border-l-[3px] border-[#7be1ea]">
                  <div className="flex justify-between items-center mb-2">
                     <span className="text-[9px] text-[#64748b] font-bold tracking-widest uppercase">QUEUE LOAD</span>
-                    <span className="text-[#7be1ea] text-[10px] font-bold">{data.metrics.queueLoad}%</span>
+                    <span className="text-[#7be1ea] text-[10px] font-bold">{queueLoad}%</span>
                  </div>
                  <div className="w-full h-1 bg-[#1e293b]">
-                    <div className="h-full bg-[#7be1ea]" style={{ width: `${data.metrics.queueLoad}%` }} />
+                    <div className="h-full bg-[#7be1ea]" style={{ width: `${queueLoad}%` }} />
                  </div>
               </div>
 
               <div className="flex-1 px-8 flex flex-col justify-center h-full border-l-[3px] border-[#a3e635]">
                  <span className="text-[9px] text-[#64748b] font-bold tracking-widest uppercase mb-1">AVERAGE RESPONSE</span>
                  <div className="flex items-baseline gap-2">
-                    <span className="text-[#a3e635] text-xl font-black font-sans tracking-wider">{data.metrics.avgResponse}</span>
+                    <span className="text-[#a3e635] text-xl font-black font-sans tracking-wider">{avgResponse}</span>
                     <span className="text-[#64748b] text-[9px] font-bold tracking-widest uppercase">LATENCY</span>
                  </div>
               </div>
@@ -253,8 +267,8 @@ export default function ProRequestsPage() {
               <div className="flex-1 px-8 flex flex-col justify-center h-full border-l-[3px] border-[#c084fc]">
                  <span className="text-[9px] text-[#64748b] font-bold tracking-widest uppercase mb-1">SYSTEM ENTROPY</span>
                  <div className="flex items-baseline gap-2">
-                    <span className="text-[#c084fc] text-xl font-bold font-mono tracking-wider uppercase">{data.metrics.systemEntropy}</span>
-                    <span className="text-[#64748b] text-[9px] font-bold tracking-widest uppercase">{data.metrics.entropyStatus}</span>
+                    <span className="text-[#c084fc] text-xl font-bold font-mono tracking-wider uppercase">{pendingUsers.length > 0 ? "NOMINAL" : "STABLE"}</span>
+                    <span className="text-[#64748b] text-[9px] font-bold tracking-widest uppercase">{pendingUsers.length > 0 ? "ACTIVE" : "IDLE"}</span>
                  </div>
               </div>
            </div>

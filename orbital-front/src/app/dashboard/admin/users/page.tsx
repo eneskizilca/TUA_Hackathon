@@ -1,75 +1,37 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, Search, Filter, MoreVertical, UserPlus, Box } from "lucide-react";
-
-// --- TYPES FOR MOCK-FREE BACKEND INTEGRATION ---
-export interface UserRecord {
-  id: string;
-  name: string;
-  role: "OPERATOR" | "OBSERVER" | string;
-  affiliation: string;
-  status: "ACTIVE" | "SUSPENDED" | "OFFLINE" | string;
-}
-
-export interface AccessLog {
-  time: string;
-  msg: string;
-  type: "success" | "warning" | "error" | "info" | string;
-}
-
-export interface UserManagementData {
-  adminName: string;
-  adminLocation: string;
-  activeNodes: number;
-  stats: {
-    totalOperators: number;
-    globalObservers: number;
-    activeInstitutions: number;
-    systemIntegrity: number;
-  };
-  users: UserRecord[];
-  totalRecords: number;
-  logs: AccessLog[];
-}
+import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, Search, Filter, MoreVertical, UserPlus } from "lucide-react";
+import { fetchAllUsers, type User as UserType } from "@/lib/api/admin";
 
 export default function UserManagementPage() {
-  const [data, setData] = useState<UserManagementData | null>(null);
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // --- BACKEND VERİ ÇEKME YERİ --- //
-    async function fetchUserData() {
-      try {
-        // const response = await fetch('/api/admin/users');
-        // const result: UserManagementData = await response.json();
-        // setData(result);
-
-        // Tamamen Boş/Mocksuz Başlangıç
-        setData({
-          adminName: "AWAITING_AUTH",
-          adminLocation: "--.---- N, --.---- E",
-          activeNodes: 0,
-          stats: {
-            totalOperators: 0,
-            globalObservers: 0,
-            activeInstitutions: 0,
-            systemIntegrity: 0.0,
-          },
-          users: [], // API'den gelen kullanıcılar buraya dolacak
-          totalRecords: 0,
-          logs: []
-        });
-      } catch (error) {
-        console.error("Failed to load user management data", error);
-      }
-    }
-    
-    fetchUserData();
+    loadUsers();
   }, []);
 
-  if (!data) return (
+  async function loadUsers() {
+    try {
+      const data = await fetchAllUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error("Failed to load users", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const totalOperators = users.filter(u => u.role === 'OPERATOR').length;
+  const totalObservers = users.filter(u => u.role === 'OBSERVER').length;
+  const activeUsers = users.filter(u => u.is_active).length;
+  const systemIntegrity = users.length > 0 ? (activeUsers / users.length) * 100 : 0;
+  const uniqueDomains = new Set(users.map(u => u.email.split('@')[1])).size;
+
+  if (loading) return (
     <div className="min-h-screen bg-[#050607] text-[#7be1ea] font-mono flex flex-col items-center justify-center gap-4 text-sm tracking-[0.3em] font-bold uppercase">
       <div className="w-8 h-8 border-4 border-[#7be1ea] border-t-transparent rounded-full animate-spin" />
       ACCESSING PERSONNEL DIRECTORY...
@@ -150,7 +112,7 @@ export default function UserManagementPage() {
            <div className="flex justify-between items-start">
               <div>
                  <h2 className="text-white font-bold text-3xl font-sans tracking-tight mb-2">Personnel Directory</h2>
-                 <p className="text-[#a3e635] text-[10px] font-bold tracking-[0.2em] uppercase">ACTIVE_SESSION_NODES: {data.activeNodes.toLocaleString()}</p>
+                 <p className="text-[#a3e635] text-[10px] font-bold tracking-[0.2em] uppercase">ACTIVE_SESSION_NODES: {activeUsers.toLocaleString()}</p>
               </div>
               
               <div className="flex items-center gap-4">
@@ -173,19 +135,19 @@ export default function UserManagementPage() {
            <div className="grid grid-cols-4 gap-6">
               <div className="bg-[#111318] p-6 border border-white/5 flex flex-col justify-between rounded-sm shadow-md">
                  <div className="text-[10px] text-[#64748b] font-bold tracking-[0.2em] mb-4 uppercase">TOTAL_OPERATORS</div>
-                 <span className="text-[#7be1ea] text-4xl font-black font-sans tracking-wide">{data.stats.totalOperators.toLocaleString()}</span>
+                 <span className="text-[#7be1ea] text-4xl font-black font-sans tracking-wide">{totalOperators.toLocaleString()}</span>
               </div>
               <div className="bg-[#111318] p-6 border border-white/5 flex flex-col justify-between rounded-sm shadow-md">
                  <div className="text-[10px] text-[#64748b] font-bold tracking-[0.2em] mb-4 uppercase">GLOBAL_OBSERVERS</div>
-                 <span className="text-white text-4xl font-black font-sans tracking-wide">{data.stats.globalObservers.toLocaleString()}</span>
+                 <span className="text-white text-4xl font-black font-sans tracking-wide">{totalObservers.toLocaleString()}</span>
               </div>
               <div className="bg-[#111318] p-6 border border-white/5 flex flex-col justify-between rounded-sm shadow-md">
                  <div className="text-[10px] text-[#64748b] font-bold tracking-[0.2em] mb-4 uppercase">ACTIVE_INSTITUTIONS</div>
-                 <span className="text-[#c084fc] text-4xl font-black font-sans tracking-wide">{data.stats.activeInstitutions.toLocaleString()}</span>
+                 <span className="text-[#c084fc] text-4xl font-black font-sans tracking-wide">{uniqueDomains.toLocaleString()}</span>
               </div>
               <div className="bg-[#111318] p-6 border border-white/5 border-l-4 border-l-[#a3e635] flex flex-col justify-between rounded-sm shadow-md">
                  <div className="text-[10px] text-[#64748b] font-bold tracking-[0.2em] mb-4 uppercase">SYSTEM_INTEGRITY</div>
-                 <span className="text-[#a3e635] text-4xl font-black font-sans tracking-wide">{data.stats.systemIntegrity.toFixed(1)}%</span>
+                 <span className="text-[#a3e635] text-4xl font-black font-sans tracking-wide">{systemIntegrity.toFixed(1)}%</span>
               </div>
            </div>
 
@@ -200,36 +162,35 @@ export default function UserManagementPage() {
               </div>
               
               <div className="flex flex-col flex-1 divide-y divide-white/5">
-                 {data.users.length > 0 ? data.users.map((user, i) => (
-                    <div key={i} className="grid grid-cols-6 items-center p-4 hover:bg-white/5 transition-colors cursor-pointer group rounded-sm">
-                       <span className="text-[#7be1ea] text-[11px] font-bold tracking-widest">{user.id}</span>
-                       <span className="text-white text-sm font-bold font-sans">{user.name}</span>
+                 {users.length > 0 ? users.map((user) => (
+                    <div key={user.id} className="grid grid-cols-6 items-center p-4 hover:bg-white/5 transition-colors cursor-pointer group rounded-sm">
+                       <span className="text-[#7be1ea] text-[11px] font-bold tracking-widest">USR_{user.id.toString().padStart(4, '0')}</span>
+                       <span className="text-white text-sm font-bold font-sans">{user.full_name || "UNNAMED"}</span>
                        
                        <div>
                           <span className={`px-3 py-1 text-[9px] tracking-widest uppercase border rounded-[2px] ${
                              user.role === 'OPERATOR' 
                              ? 'bg-[#a3e635]/10 border-[#a3e635]/30 text-[#a3e635]' 
+                             : user.role === 'ADMIN'
+                             ? 'bg-[#c084fc]/10 border-[#c084fc]/30 text-[#c084fc]'
                              : 'bg-white/5 border-white/20 text-[#64748b]'
                           }`}>
                              {user.role}
                           </span>
                        </div>
                        
-                       <span className="col-span-2 text-white/70 text-xs font-sans">{user.affiliation}</span>
+                       <span className="col-span-2 text-white/70 text-xs font-sans">{user.email}</span>
                        
                        <div className="flex justify-between items-center w-full">
                           <div className="flex items-center gap-2">
                              <div className={`w-1.5 h-1.5 rounded-[1px] ${
-                                user.status === 'ACTIVE' ? 'bg-[#a3e635] shadow-[0_0_5px_#a3e635]' 
-                                : user.status === 'SUSPENDED' ? 'bg-[#ef4444] shadow-[0_0_5px_#ef4444]' 
-                                : 'bg-white/30'
+                                user.is_active ? 'bg-[#a3e635] shadow-[0_0_5px_#a3e635]' 
+                                : 'bg-[#ef4444] shadow-[0_0_5px_#ef4444]'
                              }`} />
                              <span className={`text-[9px] tracking-widest font-bold uppercase ${
-                                user.status === 'ACTIVE' ? 'text-[#a3e635]' 
-                                : user.status === 'SUSPENDED' ? 'text-[#ef4444]' 
-                                : 'text-white/40'
+                                user.is_active ? 'text-[#a3e635]' : 'text-[#ef4444]'
                              }`}>
-                                {user.status}
+                                {user.is_active ? 'ACTIVE' : 'PENDING'}
                              </span>
                           </div>
                           
@@ -248,7 +209,7 @@ export default function UserManagementPage() {
               {/* PAGINATION */}
               <div className="flex justify-between items-center pt-4 border-t border-white/5 uppercase">
                  <span className="text-[#64748b] text-[10px] font-bold tracking-[0.2em]">
-                    SHOWING_RECORDS_001-050_OF_{data.totalRecords}
+                    SHOWING_RECORDS_001-{Math.min(50, users.length).toString().padStart(3, '0')}_OF_{users.length}
                  </span>
                  <div className="flex gap-1">
                     <button className="px-4 py-2 bg-[#15171b] text-[#64748b] text-[10px] font-bold tracking-[0.1em] border border-transparent hover:border-white/10 rounded-sm transition-colors">PREV</button>
@@ -267,17 +228,13 @@ export default function UserManagementPage() {
                  <span className="text-[#a3e635] text-[10px] font-bold tracking-[0.2em] uppercase">LIVE_USER_ACCESS_LOG</span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide text-[9px] font-mono tracking-wider">
-                 {data.logs.length > 0 ? data.logs.map((log, i) => (
-                    <div key={i} className={`flex gap-3 leading-relaxed ${
-                       log.type === 'success' ? 'text-[#a3e635]' 
-                       : log.type === 'err' ? 'text-[#ef4444]' 
-                       : log.type === 'warning' ? 'text-[#eab308]' 
-                       : 'text-white/60'
-                    }`}>
-                       <span className="opacity-80">[{log.time}]</span>
-                       <span className={log.type === 'success' ? 'text-white/80' : ''}>{log.msg}</span>
+                 {users.slice(0, 3).map((user, i) => (
+                    <div key={i} className="flex gap-3 leading-relaxed text-[#a3e635]">
+                       <span className="opacity-80">[{new Date(user.created_at).toLocaleTimeString()}]</span>
+                       <span className="text-white/80">USER {user.email} REGISTERED AS {user.role}</span>
                     </div>
-                 )) : (
+                 ))}
+                 {users.length === 0 && (
                     <div className="opacity-30 flex items-center h-full">NO ACCESS LOGS RECORDED</div>
                  )}
               </div>
