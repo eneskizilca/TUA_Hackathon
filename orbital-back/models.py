@@ -39,7 +39,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.OBSERVER, nullable=False)
-    is_active = Column(Boolean, default=False)  # Changed to False by default
+    is_active = Column(Boolean, default=True)  # Set to True by default for hackathon
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     satellites = relationship("Satellite", back_populates="owner")
