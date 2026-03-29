@@ -7,6 +7,7 @@ from enum import Enum
 class UserRole(str, Enum):
     OBSERVER = "OBSERVER"
     OPERATOR = "OPERATOR"
+    ADMIN = "ADMIN"
 
 
 # --- Auth ---

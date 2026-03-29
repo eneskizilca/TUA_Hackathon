@@ -8,6 +8,7 @@ from database import Base
 class UserRole(str, enum.Enum):
     OBSERVER = "OBSERVER"
     OPERATOR = "OPERATOR"
+    ADMIN = "ADMIN"
 
 
 class User(Base):

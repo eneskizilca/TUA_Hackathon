@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, Terminal, Activity, Rocket, Info, ArrowRight } from "lucide-react";
+import { Eye, Terminal, Shield, Activity, Rocket, Info, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"OBSERVER" | "OPERATOR">("OBSERVER");
+  const [role, setRole] = useState<"OBSERVER" | "OPERATOR" | "ADMIN">("OBSERVER");
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -61,9 +61,9 @@ export default function RegisterPage() {
       if (!response.ok) {
         if (response.status === 422 && data.detail) {
           const validationErrors = Array.isArray(data.detail) 
-            ? data.detail.map((err: { loc?: string[]; msg: string }) => `${err.loc?.join('.')}: ${err.msg}`).join(', ')
+            ? data.detail.map((err: { loc?: string[]; msg: string }) => \`\${err.loc?.join('.')}: \${err.msg}\`).join(', ')
             : JSON.stringify(data.detail);
-          throw new Error(`Validation error: ${validationErrors}`);
+          throw new Error(\`Validation error: \${validationErrors}\`);
         }
         
         const errorMessage = typeof data.detail === 'string' 
@@ -156,25 +156,36 @@ export default function RegisterPage() {
             <div className="flex h-24 mb-10 bg-[#1a1a1a] shadow-inner mb-12">
               <div 
                 onClick={() => setRole("OBSERVER")}
-                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
+                className={\`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors \${
                   role === "OBSERVER" 
                     ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
                     : "border-transparent text-astro-muted hover:text-white/80"
-                }`}
+                }\`}
               >
                 <Eye size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OBSERVER</span>
               </div>
               <div 
                 onClick={() => setRole("OPERATOR")}
-                className={`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors ${
+                className={\`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors \${
                   role === "OPERATOR" 
                     ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
                     : "border-transparent text-astro-muted hover:text-white/80"
-                }`}
+                }\`}
               >
                 <Terminal size={20} />
                 <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">OPERATOR</span>
+              </div>
+              <div 
+                onClick={() => setRole("ADMIN")}
+                className={\`flex-1 flex flex-col items-center justify-center gap-3 border-b-2 cursor-pointer transition-colors \${
+                  role === "ADMIN" 
+                    ? "border-astro-cyan text-astro-cyan bg-[#1f1f1f]" 
+                    : "border-transparent text-astro-muted hover:text-white/80"
+                }\`}
+              >
+                <Shield size={20} />
+                <span className="font-mono text-xs font-bold tracking-[0.2em] uppercase mt-1">ADMIN</span>
               </div>
             </div>
 
