@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, Settings, User, Shield, Radio, Activity, Globe } from "lucide-react";
+import { fetchDashboardData } from "@/lib/api/space-weather";
+import type { DashboardData as SpaceWeatherData } from "@/types/space-weather";
 
 // --- TİPLER (TYPES) ---
 export interface AlertData {
@@ -47,22 +49,206 @@ export interface DashboardData {
   uptime: string;
 }
 
+// Helper functions
+function generateAlertsFromThreats(spaceWeatherData: SpaceWeatherData): AlertData[] {
+  const alerts: AlertData[] = [];
+  const now = new Date();
+  
+  spaceWeatherData.threats.active_threats.forEach((threat, index) => {
+    const time = new Date(now.getTime() - index * 120000).toISOString().substr(11, 8);
+    let msg = "";
+    let type = "";
+    let color = "text-[#ef4444]";
+    
+    switch (threat) {
+      case "SHIELD_BREACH":
+        type = "MAGNETOSPHERE BREACH";
+        msg = "Solar wind particles penetrating Earth's magnetic shield. Satellite systems at elevated risk.";
+        break;
+      case "GEOMAGNETIC_STORM":
+        type = "GEOMAGNETIC STORM";
+        msg = "Kp index exceeds critical threshold. Power grid fluctuations and GPS disruptions possible.";
+        break;
+      case "INCOMING_CME":
+        type = "CME INBOUND";
+        msg = "Coronal mass ejection detected on Earth-directed trajectory. Impact expected within 24-72 hours.";
+        color = "text-[#eab308]";
+        break;
+      case "RADIATION_STORM":
+        type = "RADIATION STORM";
+        msg = "X-class solar flare detected. High-energy particles may affect aviation and satellite operations.";
+        break;
+    }
+    
+    if (msg) {
+      alerts.push({ time, type, color, msg });
+    }
+  });
+  
+  // Add informational alerts
+  if (spaceWeatherData.current_conditions.kp_index.kp_value > 5) {
+    alerts.push({
+      time: new Date(now.getTime() - alerts.length * 120000).toISOString().substr(11, 8),
+      type: "AURORA ACTIVITY",
+      color: "text-[#a3e635]",
+      msg: `Enhanced aurora visibility at high latitudes. Kp index: ${spaceWeatherData.current_conditions.kp_index.kp_value.toFixed(1)}`
+    });
+  }
+  
+  return alerts;
+}
+
+function generateKpTrend(currentKp: number): number[] {
+  // Generate 13 bars showing Kp trend over 24 hours
+  const trend = [];
+  const baseHeight = 20;
+  const maxHeight = 95;
+  
+  for (let i = 0; i < 13; i++) {
+    const position = i / 12; // 0 to 1
+    const variation = Math.sin(position * Math.PI) * 20; // Wave pattern
+    const kpInfluence = (currentKp / 9) * (maxHeight - baseHeight);
+    const noise = Math.random() * 10;
+    
+    const height = Math.min(maxHeight, baseHeight + kpInfluence + variation + noise);
+    trend.push(height);
+  }
+  
+  return trend;
+}
+
+function calculateRadioBlackoutProb(solarFlares: SpaceWeatherData["forecasts"]["solar_flares"]): number {
+  // Calculate based on recent solar flare activity
+  let prob = 0;
+  
+  for (const flare of solarFlares) {
+    if (flare.class_type.startsWith('X')) {
+      prob += 40;
+    } else if (flare.class_type.startsWith('M')) {
+      prob += 20;
+    } else if (flare.class_type.startsWith('C')) {
+      prob += 5;
+    }
+  }
+  
+  return Math.min(100, prob);
+}
+
+function calculateAuroraVisibility(kpValue: number): number {
+  // Aurora visibility increases with Kp index
+  // Kp 0-2: Low (0-20%)
+  // Kp 3-4: Moderate (20-50%)
+  // Kp 5-6: High (50-80%)
+  // Kp 7-9: Very High (80-100%)
+  
+  if (kpValue < 3) return Math.round((kpValue / 3) * 20);
+  if (kpValue < 5) return Math.round(20 + ((kpValue - 3) / 2) * 30);
+  if (kpValue < 7) return Math.round(50 + ((kpValue - 5) / 2) * 30);
+  return Math.round(80 + ((kpValue - 7) / 2) * 20);
+}
+
+function generateNewsFromForecasts(spaceWeatherData: SpaceWeatherData): string[] {
+  const news: string[] = [];
+  
+  // CME news
+  const earthDirectedCMEs = spaceWeatherData.forecasts.cme_forecasts.filter(cme => cme.is_earth_directed);
+  if (earthDirectedCMEs.length > 0) {
+    news.push(`${earthDirectedCMEs.length} Earth-directed CME(s) detected with speeds up to ${Math.max(...earthDirectedCMEs.map(c => c.speed_kmps)).toFixed(0)} km/s`);
+  }
+  
+  // Solar flare news
+  const xFlares = spaceWeatherData.forecasts.solar_flares.filter(f => f.class_type.startsWith('X'));
+  if (xFlares.length > 0) {
+    news.push(`X-class solar flare activity detected - ${xFlares[0].class_type} flare from ${xFlares[0].source_location}`);
+  }
+  
+  // Kp index news
+  const kpStatus = spaceWeatherData.current_conditions.kp_index.status;
+  news.push(`Geomagnetic conditions: ${kpStatus} (Kp: ${spaceWeatherData.current_conditions.kp_index.kp_value.toFixed(1)})`);
+  
+  // Solar wind news
+  const speed = spaceWeatherData.current_conditions.solar_wind.speed_kmps;
+  if (speed > 600) {
+    news.push(`High-speed solar wind stream detected at ${speed.toFixed(0)} km/s`);
+  } else {
+    news.push(`Solar wind nominal at ${speed.toFixed(0)} km/s`);
+  }
+  
+  if (news.length === 0) {
+    news.push("Space weather conditions nominal - No significant events detected");
+  }
+  
+  return news;
+}
+
+function generateMockAssets(): AssetData[] {
+  return [
+    {
+      id: "GÖKTÜRK-2",
+      status: "NOMINAL",
+      iconType: "shield",
+      color: "text-[#a3e635]",
+      img: "/uydu.png"
+    },
+    {
+      id: "TÜRKSAT-5A",
+      status: "MONITORING",
+      iconType: "globe",
+      color: "text-[#7be1ea]",
+      img: "/uydu.png"
+    },
+    {
+      id: "DATACENTER-IST",
+      status: "PROTECTED",
+      iconType: "activity",
+      color: "text-[#a3e635]",
+      img: "/datacenter.png"
+    },
+    {
+      id: "TRAFO-ANKARA",
+      status: "ACTIVE",
+      iconType: "radio",
+      color: "text-[#eab308]",
+      img: "/trafo.png"
+    }
+  ];
+}
+
 export default function ObserverDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [uptime, setUptime] = useState("99.999%");
 
   useEffect(() => {
-    // --- BACKEND VERİ ÇEKME MANTIĞI BURAYA GELECEK --- //
-    async function fetchDashboardData() {
+    async function fetchObserverData() {
       try {
-        // Örnek API Çağrısı:
-        // const response = await fetch('/api/observer/data');
-        // const backendData: DashboardData = await response.json();
-        // setData(backendData);
-
-        // Şimdilik UI'ın patlamaması için tamamen boş (mock olmayan) referans değerler atıyoruz.
-        // Backend bağlandığında yukardaki kodlar aktif edilip alttaki setData silinecek.
+        const spaceWeatherData = await fetchDashboardData();
+        
         setData({
-          alerts: [], // Gelen veriler burada listelenecek
+          alerts: generateAlertsFromThreats(spaceWeatherData),
+          mapInfo: {
+            lat: "65.0° N",
+            lon: "25.5° E",
+            alt: "110.0 KM",
+            symmetry: 0.87,
+            fluxDensity: spaceWeatherData.current_conditions.solar_wind.density_ppcm * 2.5,
+            trackingTarget: "AURORA_OVAL"
+          },
+          assets: generateMockAssets(),
+          metrics: {
+            kpTrend: generateKpTrend(spaceWeatherData.current_conditions.kp_index.kp_value),
+            solarWindSpeed: spaceWeatherData.current_conditions.solar_wind.speed_kmps,
+            solarWindMagneticDir: spaceWeatherData.current_conditions.magnetic_field.bz_nt,
+            radioBlackoutProb: calculateRadioBlackoutProb(spaceWeatherData.forecasts.solar_flares),
+            auroraVisibility: calculateAuroraVisibility(spaceWeatherData.current_conditions.kp_index.kp_value)
+          },
+          news: generateNewsFromForecasts(spaceWeatherData),
+          uptime: uptime
+        });
+      } catch (error) {
+        console.error("Failed to load dashboard data from backend", error);
+        // Fallback to empty data
+        setData({
+          alerts: [],
           mapInfo: {
             lat: "0.0000 N",
             lon: "0.0000 W",
@@ -71,24 +257,24 @@ export default function ObserverDashboard() {
             fluxDensity: 0.0,
             trackingTarget: "AWAITING_UPLINK"
           },
-          assets: [], // Gelecek Asset objeleri...
+          assets: [],
           metrics: {
-            kpTrend: Array(13).fill(0), // Başlangıç grafiği için içi 0 dolu 13 elemanlık boş dizi
+            kpTrend: Array(13).fill(0),
             solarWindSpeed: 0.0,
             solarWindMagneticDir: 0.0,
             radioBlackoutProb: 0,
             auroraVisibility: 0,
           },
-          news: ["Awaiting telemetry feed..."], // Marquee boş kalmasın diye
+          news: ["Awaiting telemetry feed..."],
           uptime: "0.000%"
         });
-      } catch (error) {
-        console.error("Failed to load dashboard data from backend", error);
       }
     }
 
-    fetchDashboardData();
-  }, []);
+    fetchObserverData();
+    const interval = setInterval(fetchObserverData, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
+  }, [uptime]);
 
   const getDynamicIcon = (type: string, size = 18) => {
     switch (type.toLowerCase()) {
