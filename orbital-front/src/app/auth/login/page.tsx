@@ -5,9 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,8 +34,6 @@ export default function LoginPage() {
       formBody.append("username", formData.email); // OAuth2 'username' field'ı bekliyor
       formBody.append("password", formData.password);
 
-      console.log("Login attempt:", { email: formData.email });
-
       const response = await fetch("http://localhost:8000/api/v1/auth/login", {
         method: "POST",
         headers: {
@@ -43,15 +43,13 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      console.log("Login response:", response.status, data);
 
       if (!response.ok) {
         throw new Error(data.detail || "Login failed");
       }
 
-      // Token'ı localStorage'a kaydet
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Use AuthContext login
+      login(data.access_token, data.user);
 
       // Role'e göre yönlendir
       if (data.user.role === "ADMIN") {

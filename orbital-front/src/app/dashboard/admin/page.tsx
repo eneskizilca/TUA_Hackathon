@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Bell, Settings, User, LayoutGrid, Users, ShieldAlert, Activity, FileText, LogOut, TerminalSquare, AlertCircle, AlertTriangle, ShieldCheck, Box } from "lucide-react";
 import { fetchDashboardData } from "@/lib/api/space-weather";
 import type { DashboardData as SpaceWeatherData } from "@/types/space-weather";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // --- TYPES FOR MOCK-FREE BACKEND INTEGRATION ---
 export interface AdminMetrics {
@@ -233,6 +234,7 @@ export default function AdminDashboardPage() {
   );
 
   return (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
@@ -502,5 +504,6 @@ export default function AdminDashboardPage() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

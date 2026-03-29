@@ -18,6 +18,19 @@ class AlertSeverity(str, enum.Enum):
     CRITICAL = "CRITICAL"
 
 
+class AssetType(str, enum.Enum):
+    SATELLITE = "SATELLITE"
+    POWER_GRID = "POWER GRID"
+    AIRCRAFT = "AIRCRAFT"
+    DATA_CENTER = "DATA CENTER"
+
+
+class AssetStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    WARNING = "WARNING"
+    MAINTENANCE = "MAINTENANCE"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -70,3 +83,31 @@ class Telemetry(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     satellite = relationship("Satellite", back_populates="telemetry")
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    asset_id = Column(String, unique=True, nullable=False, index=True)
+    asset_type = Column(Enum(AssetType), nullable=False)
+    status = Column(Enum(AssetStatus), default=AssetStatus.ACTIVE, nullable=False)
+    
+    # Telemetry & Position
+    registration_timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    altitude_km = Column(Float, nullable=True)
+    
+    # Orbital Dynamics
+    velocity_x = Column(Float, nullable=True)
+    velocity_y = Column(Float, nullable=True)
+    velocity_z = Column(Float, nullable=True)
+    battery_voltage = Column(Float, nullable=True)
+    
+    # Projected Route
+    coordinate_array = Column(Text, nullable=True)  # JSON string
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+

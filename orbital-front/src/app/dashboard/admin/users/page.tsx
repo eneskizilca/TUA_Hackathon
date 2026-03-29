@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, Search, Filter, MoreVertical, UserPlus } from "lucide-react";
 import { fetchAllUsers, type User as UserType } from "@/lib/api/admin";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -39,6 +40,7 @@ export default function UserManagementPage() {
   );
 
   return (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
@@ -258,5 +260,6 @@ export default function UserManagementPage() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Bell, Settings, User, ChevronDown, Satellite, FolderClosed, TerminalSquare, HelpCircle, FileText, Waves } from "lucide-react";
 import { fetchDashboardData } from "@/lib/api/space-weather";
 import type { DashboardData } from "@/types/space-weather";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // --- TİPLER (TYPES) ---
 export interface ActionLog {
@@ -211,6 +212,7 @@ export default function OperatorDashboard() {
   }
 
   return (
+    <ProtectedRoute allowedRoles={["OPERATOR", "ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono text-xs uppercase tracking-widest flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 shrink-0 bg-[#0a0b0d] z-50">
@@ -509,5 +511,6 @@ export default function OperatorDashboard() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -3,11 +3,28 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Bell, Settings, User, Satellite, FolderClosed, TerminalSquare, Calendar } from "lucide-react";
+import { createAsset, type AssetCreate } from "@/lib/api/assets";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function NewAssetPage() {
-    // Asset Tipi State'i
+    const router = useRouter();
+    
+    // Form State
     const [assetType, setAssetType] = useState("SATELLITE");
+    const [assetId, setAssetId] = useState("");
+    const [status, setStatus] = useState("ACTIVE");
+    const [latitude, setLatitude] = useState("");
+    const [longitude, setLongitude] = useState("");
+    const [altitudeKm, setAltitudeKm] = useState("");
+    const [velocityX, setVelocityX] = useState("");
+    const [velocityY, setVelocityY] = useState("");
+    const [velocityZ, setVelocityZ] = useState("");
+    const [batteryVoltage, setBatteryVoltage] = useState("");
+    const [coordinateArray, setCoordinateArray] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
     // Görsel Seçenekler Config'i
     const assetTypes = [
@@ -17,7 +34,37 @@ export default function NewAssetPage() {
         { id: "DATA CENTER", label: "DATA CENTER", img: "/datacenter.png", glow: "shadow-[0_0_20px_rgba(148,163,184,0.2)] text-[#cbd5e1]", border: "border-[#cbd5e1]" },
     ];
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        setSubmitting(true);
+
+        try {
+            const assetData: AssetCreate = {
+                asset_id: assetId,
+                asset_type: assetType,
+                status: status,
+                latitude: latitude ? parseFloat(latitude) : undefined,
+                longitude: longitude ? parseFloat(longitude) : undefined,
+                altitude_km: altitudeKm ? parseFloat(altitudeKm) : undefined,
+                velocity_x: velocityX ? parseFloat(velocityX) : undefined,
+                velocity_y: velocityY ? parseFloat(velocityY) : undefined,
+                velocity_z: velocityZ ? parseFloat(velocityZ) : undefined,
+                battery_voltage: batteryVoltage ? parseFloat(batteryVoltage) : undefined,
+                coordinate_array: coordinateArray || undefined
+            };
+
+            await createAsset(assetData);
+            router.push("/operator/assets");
+        } catch (err: any) {
+            setError(err.message || "Failed to create asset");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
+        <ProtectedRoute allowedRoles={["OPERATOR", "ADMIN"]}>
         <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
             {/* HEADER */}
             <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
@@ -88,6 +135,13 @@ export default function NewAssetPage() {
                             <p className="text-[#64748b] text-[10px] font-mono tracking-[0.2em] uppercase">Initialize manual record for non-automated orbital nodes.</p>
                         </div>
 
+                        {/* ERROR MESSAGE */}
+                        {error && (
+                            <div className="mb-6 bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] p-4 rounded-sm text-xs font-bold tracking-widest">
+                                {error}
+                            </div>
+                        )}
+
                         {/* VISUAL ASSET SELECTOR */}
                         <div className="mb-10 flex flex-col gap-4">
                             <div className="text-[10px] tracking-[0.2em] font-bold text-white/50 uppercase">1. SELECT ASSET CLASSIFICATION VISUALLY</div>
@@ -125,7 +179,7 @@ export default function NewAssetPage() {
                             </div>
                         </div>
 
-                        <form className="flex flex-col gap-6 flex-1" onSubmit={(e) => e.preventDefault()}>
+                        <form className="flex flex-col gap-6 flex-1" onSubmit={handleSubmit}>
 
                             <div className="grid grid-cols-2 gap-6">
                                 {/* BOX 01 // BASIC INFORMATION */}
@@ -153,6 +207,9 @@ export default function NewAssetPage() {
                                         <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">ASSET ID</label>
                                         <input
                                             type="text"
+                                            value={assetId}
+                                            onChange={(e) => setAssetId(e.target.value)}
+                                            required
                                             className="bg-white text-black p-4 focus:outline-none focus:ring-2 focus:ring-[#7be1ea] font-medium text-xs tracking-widest transition-colors rounded-sm"
                                             placeholder="OS-XXXX-ALPHA"
                                         />
@@ -160,7 +217,10 @@ export default function NewAssetPage() {
 
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">STATUS</label>
-                                        <select className="bg-[#1e293b]/50 border border-white/5 p-4 text-[#7be1ea] focus:outline-none focus:border-[#7be1ea]/50 text-xs font-bold tracking-[0.1em] transition-colors rounded-sm appearance-none cursor-pointer">
+                                        <select 
+                                            value={status}
+                                            onChange={(e) => setStatus(e.target.value)}
+                                            className="bg-[#1e293b]/50 border border-white/5 p-4 text-[#7be1ea] focus:outline-none focus:border-[#7be1ea]/50 text-xs font-bold tracking-[0.1em] transition-colors rounded-sm appearance-none cursor-pointer">
                                             <option>ACTIVE</option>
                                             <option>WARNING</option>
                                             <option>MAINTENANCE</option>
@@ -190,17 +250,32 @@ export default function NewAssetPage() {
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">LATITUDE</label>
-                                            <input type="text" placeholder="00.000000" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={latitude}
+                                                onChange={(e) => setLatitude(e.target.value)}
+                                                placeholder="00.000000" 
+                                                className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">LONGITUDE</label>
-                                            <input type="text" placeholder="00.000000" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={longitude}
+                                                onChange={(e) => setLongitude(e.target.value)}
+                                                placeholder="00.000000" 
+                                                className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">ALTITUDE (KM)</label>
-                                        <input type="text" placeholder="400.0" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                        <input 
+                                            type="text" 
+                                            value={altitudeKm}
+                                            onChange={(e) => setAltitudeKm(e.target.value)}
+                                            placeholder="400.0" 
+                                            className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                     </div>
                                 </div>
                             </div>
@@ -216,22 +291,42 @@ export default function NewAssetPage() {
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">VEL X (KM/S)</label>
-                                            <input type="text" placeholder="7.66" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={velocityX}
+                                                onChange={(e) => setVelocityX(e.target.value)}
+                                                placeholder="7.66" 
+                                                className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">VEL Y (KM/S)</label>
-                                            <input type="text" placeholder="0.00" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={velocityY}
+                                                onChange={(e) => setVelocityY(e.target.value)}
+                                                placeholder="0.00" 
+                                                className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">VEL Z (KM/S)</label>
-                                            <input type="text" placeholder="0.00" className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={velocityZ}
+                                                onChange={(e) => setVelocityZ(e.target.value)}
+                                                placeholder="0.00" 
+                                                className="bg-white text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2 w-full">
                                         <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">BATTERY VOLTAGE (V)</label>
                                         <div className="flex items-center gap-4">
-                                            <input type="text" placeholder="28.4" className="bg-white flex-1 text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
+                                            <input 
+                                                type="text" 
+                                                value={batteryVoltage}
+                                                onChange={(e) => setBatteryVoltage(e.target.value)}
+                                                placeholder="28.4" 
+                                                className="bg-white flex-1 text-black font-medium p-4 text-xs tracking-widest transition-colors rounded-sm focus:outline-none focus:ring-2 ring-[#7be1ea]" />
                                             <div className="bg-[#1e40af]/20 border border-[#a3e635]/20 text-[#a3e635] text-[9px] font-bold tracking-[0.2em] px-4 py-4 rounded-sm">
                                                 NOMINAL
                                             </div>
@@ -249,6 +344,8 @@ export default function NewAssetPage() {
                                     <div className="flex flex-col gap-2 flex-1 relative">
                                         <label className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">COORDINATE ARRAY (JSON/TXT)</label>
                                         <textarea
+                                            value={coordinateArray}
+                                            onChange={(e) => setCoordinateArray(e.target.value)}
                                             className="flex-1 bg-[#1e293b]/30 border border-white/5 rounded-sm p-4 text-[#64748b] font-mono text-xs tracking-widest focus:outline-none focus:border-[#c084fc]/50 resize-none"
                                             placeholder="[ {lat: 45.0, lng: -12.0, alt: 400.2}, ... ]"
                                         />
@@ -265,8 +362,11 @@ export default function NewAssetPage() {
                                 <Link href="/operator/assets" className="text-[11px] tracking-[0.3em] font-bold text-white hover:text-[#ef4444] transition-colors uppercase">
                                     CANCEL
                                 </Link>
-                                <button className="bg-[#7be1ea] text-black font-extrabold text-[11px] tracking-[0.2em] px-12 py-5 rounded-sm uppercase hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all">
-                                    REGISTER ASSET
+                                <button 
+                                    type="submit"
+                                    disabled={submitting || !assetId}
+                                    className="bg-[#7be1ea] text-black font-extrabold text-[11px] tracking-[0.2em] px-12 py-5 rounded-sm uppercase hover:-translate-y-0.5 hover:shadow-[0_5px_15px_rgba(123,225,234,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                                    {submitting ? "REGISTERING..." : "REGISTER ASSET"}
                                 </button>
                             </div>
                         </form>
@@ -274,5 +374,6 @@ export default function NewAssetPage() {
                 </section>
             </main>
         </div>
+        </ProtectedRoute>
     );
 }

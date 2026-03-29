@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, Server, Database, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { fetchAPIHealth, type APIHealthStatus } from "@/lib/api/admin";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ApiHealthPage() {
   const [healthData, setHealthData] = useState<APIHealthStatus | null>(null);
@@ -62,6 +63,7 @@ export default function ApiHealthPage() {
   const totalEndpoints = healthData ? 6 : 0;
 
   return (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
         <div className="flex items-center gap-12">
@@ -288,5 +290,6 @@ export default function ApiHealthPage() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

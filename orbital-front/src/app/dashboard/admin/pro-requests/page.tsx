@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bell, Settings, User, LayoutGrid, Users, ShieldCheck, Activity, FileText, LogOut, MapPin, Search, Network, Satellite, Building2, Rocket } from "lucide-react";
 import { fetchPendingUsers, updateUser, type User as UserType } from "@/lib/api/admin";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ProRequestsPage() {
   const [pendingUsers, setPendingUsers] = useState<UserType[]>([]);
@@ -84,6 +85,7 @@ export default function ProRequestsPage() {
   );
 
   return (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
@@ -291,5 +293,6 @@ export default function ProRequestsPage() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, Settings, User, Satellite, FolderClosed, TerminalSquare, X } from "lucide-react";
+import { getAssetStats, listAssets, type Asset, type AssetStats } from "@/lib/api/assets";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // --- TYPES ---
 export interface AssetType {
@@ -29,29 +31,50 @@ export interface RegistryData {
 
 export default function AssetRegistryPage() {
   const [data, setData] = useState<RegistryData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // --- BACKEND VERİ ÇEKME MANTIĞI BURAYA GELECEK --- //
     async function fetchRegistryData() {
       try {
-        // const response = await fetch('/api/operator/registry');
-        // const backendData: RegistryData = await response.json();
-        // setData(backendData);
+        const [stats, assets] = await Promise.all([
+          getAssetStats(),
+          listAssets()
+        ]);
 
-        // Tamamen Boş/Mocksuz Başlangıç (Backend'den Gelecek)
+        // Transform backend data to frontend format
+        const transformedAssets: AssetType[] = assets.map((asset: Asset) => ({
+          id: asset.asset_id,
+          type: asset.asset_type,
+          status: asset.status,
+          lastTelemetry: new Date(asset.registration_timestamp).toLocaleString()
+        }));
+
+        setData({
+          totalAssets: stats.total_assets,
+          nominalAssets: stats.nominal_assets,
+          atRiskAssets: stats.at_risk_assets,
+          assets: transformedAssets,
+          selectedDetails: null
+        });
+      } catch (error) {
+        console.error("Failed to load registry data", error);
+        // Fallback to empty data
         setData({
           totalAssets: 0,
           nominalAssets: 0,
           atRiskAssets: 0,
           assets: [],
-          selectedDetails: null // Herhangi bir asset seçili değil başlangıçta
+          selectedDetails: null
         });
-      } catch (error) {
-        console.error("Failed to load registry data", error);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchRegistryData();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchRegistryData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const getTypeStyle = (type: string) => {
@@ -73,14 +96,17 @@ export default function AssetRegistryPage() {
     }
   };
 
-  if (!data) return (
+  if (!data || loading) return (
+    <ProtectedRoute allowedRoles={["OPERATOR", "ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#7be1ea] font-mono flex flex-col items-center justify-center gap-4 text-sm tracking-[0.3em] font-bold">
       <div className="w-8 h-8 border-4 border-[#7be1ea] border-t-transparent rounded-full animate-spin" />
       FETCHING REGISTRY DATA...
     </div>
+    </ProtectedRoute>
   );
 
   return (
+    <ProtectedRoute allowedRoles={["OPERATOR", "ADMIN"]}>
     <div className="min-h-screen bg-[#050607] text-[#64748b] font-mono flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0a0b0d] z-50">
@@ -263,5 +289,6 @@ export default function AssetRegistryPage() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

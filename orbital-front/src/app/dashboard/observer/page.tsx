@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Bell, Settings, User, Shield, Radio, Activity, Globe } from "lucide-react";
 import { fetchDashboardData } from "@/lib/api/space-weather";
 import type { DashboardData as SpaceWeatherData } from "@/types/space-weather";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // --- TİPLER (TYPES) ---
 export interface AlertData {
@@ -298,6 +299,7 @@ export default function ObserverDashboard() {
 
   // --- VERİ EŞLEŞTİRMELİ ANA UI MİMARİSİ --- //
   return (
+    <ProtectedRoute allowedRoles={["OBSERVER", "OPERATOR", "ADMIN"]}>
     <div className="min-h-screen bg-[#030405] text-[#64748b] font-mono text-xs uppercase tracking-widest flex flex-col overflow-hidden">
       {/* HEADER */}
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 shrink-0 bg-[#050607]/80 backdrop-blur-md z-50">
@@ -315,7 +317,7 @@ export default function ObserverDashboard() {
           </div>
           <nav className="flex items-center gap-10 ml-12 text-sm">
             <button className="text-[#7be1ea] border-b-2 border-[#7be1ea] h-20 px-2 font-bold tracking-[0.2em]">DASHBOARD</button>
-            <button className="text-[#475569] hover:text-white transition-colors tracking-[0.2em]">AURORA VIEW</button>
+            <Link href="/aurora" className="text-[#475569] hover:text-white transition-colors tracking-[0.2em]">AURORA VIEW</Link>
           </nav>
         </div>
         <div className="flex items-center gap-8 text-[#475569]">
@@ -545,5 +547,6 @@ export default function ObserverDashboard() {
         }
       `}</style>
     </div>
+    </ProtectedRoute>
   );
 }

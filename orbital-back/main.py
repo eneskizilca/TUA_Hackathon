@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
-from routers import auth, telemetry, space_weather, admin
+from routers import auth, telemetry, space_weather, admin, assets
 
 
 @asynccontextmanager
@@ -34,6 +34,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(telemetry.router, prefix="/api/v1/telemetry", tags=["Telemetry"])
 app.include_router(space_weather.router, prefix="/api/v1/space-weather", tags=["Space Weather"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(assets.router)
 
 
 @app.get("/", tags=["Health"])
