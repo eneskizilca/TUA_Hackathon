@@ -161,6 +161,79 @@ function calculateSystemHealth(spaceWeatherData: SpaceWeatherData): SystemHealth
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminData | null>(null);
+  const [alertBtnText, setAlertBtnText] = useState("⚡ BROADCAST SOLAR ALERT");
+  const [isSending, setIsSending] = useState(false);
+
+  const handleBroadcastAlert = async () => {
+    console.log("Broadcast button clicked");
+    if (isSending) return;
+    
+    setIsSending(true);
+    setAlertBtnText("SENDING...");
+    
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'default' || Notification.permission === 'denied') {
+          try {
+            await Notification.requestPermission();
+          } catch(e) {
+            console.warn("Notification permission error:", e);
+          }
+        }
+      }
+
+      console.log("Fetching dashboard data...");
+      const spaceWeatherData = await fetchDashboardData();
+      
+      const kp_value = spaceWeatherData.current_conditions.kp_index.kp_value.toFixed(1);
+      const status = spaceWeatherData.current_conditions.kp_index.status;
+      const critical_count = spaceWeatherData.assets.critical_count;
+      const composite_score = spaceWeatherData.threats.composite_score;
+
+      // 1. Send Local Browser Notification
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification("⚠️ ORBITAL SENSE SOLAR ALERT", {
+          body: `INCOMING CME detected.\nKp-Index: ${kp_value} — ${status}\n${critical_count} critical assets at risk.\nComposite threat score: ${composite_score}%`,
+          icon: "/astrologo.gif",
+          badge: "/astrologo.gif"
+        });
+      }
+
+      // 2. Send Mobile Push Notifications via Backend
+      console.log("Sending POST to /notifications/broadcast...");
+      const res = await fetch("http://localhost:8000/notifications/broadcast", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Solar storm incoming",
+          kp_value: parseFloat(kp_value),
+          threat_score: composite_score
+        })
+      });
+
+      const resData = await res.json();
+      console.log("Broadcast API response:", resData);
+
+      if (!res.ok) {
+        throw new Error(`API returned ${res.status}: ${JSON.stringify(resData)}`);
+      }
+
+      setAlertBtnText("ALERT DISPATCHED");
+      alert("Broadcast Sent! Mobile phones have been notified.");
+      
+      setTimeout(() => {
+        setAlertBtnText("⚡ BROADCAST SOLAR ALERT");
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to broadcast alert:", error);
+      alert(`Error broadcasting: ${error instanceof Error ? error.message : String(error)}`);
+      setAlertBtnText("⚡ BROADCAST SOLAR ALERT");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchAdminData() {
@@ -304,10 +377,20 @@ export default function AdminDashboardPage() {
         {/* CENTER CONTENT */}
         <section className="flex-1 flex flex-col px-10 py-10 gap-6 overflow-y-auto bg-[#0a0a0a]">
            
-           {/* TITLE HEADER */}
-           <div className="mb-2">
-              <h2 className="text-white font-bold text-3xl font-sans tracking-widest uppercase truncate mb-1">SYSTEM_SUMMARY_CORE</h2>
-              <p className="text-[#64748b] text-[10px] uppercase font-mono tracking-[0.2em]">REAL-TIME ORBITAL TELEMETRY & ASSET DISTRIBUTION</p>
+           {/* TITLE HEADER & ACTIONS */}
+           <div className="mb-4 flex justify-between items-start">
+              <div>
+                 <h2 className="text-white font-bold text-3xl font-sans tracking-widest uppercase truncate mb-1">SYSTEM_SUMMARY_CORE</h2>
+                 <p className="text-[#64748b] text-[10px] uppercase font-mono tracking-[0.2em]">REAL-TIME ORBITAL TELEMETRY & ASSET DISTRIBUTION</p>
+              </div>
+              <button
+                onClick={handleBroadcastAlert}
+                disabled={isSending}
+                className={`flex items-center gap-3 border border-[#ff4444] text-[#ff4444] bg-[#ff4444]/10 hover:bg-[#ff4444]/20 transition-colors px-6 py-3 font-mono text-xs tracking-[0.2em] font-bold shadow-[0_0_15px_rgba(255,68,68,0.1)] shrink-0 ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className={`w-2 h-2 rounded-full bg-[#ff4444] ${!isSending ? 'animate-pulse' : ''} shadow-[0_0_8px_#ff4444]`} />
+                {alertBtnText}
+              </button>
            </div>
 
            {/* STATS ROW */}

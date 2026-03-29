@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
-from routers import auth, telemetry, space_weather, admin, assets
-
+from routers import auth, telemetry, space_weather, admin, assets, notifications
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +34,7 @@ app.include_router(telemetry.router, prefix="/api/v1/telemetry", tags=["Telemetr
 app.include_router(space_weather.router, prefix="/api/v1/space-weather", tags=["Space Weather"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(assets.router)
-
+app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
 @app.get("/", tags=["Health"])
 def health_check():
