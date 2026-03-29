@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ComposableMap, Geographies, Geography, Marker, Graticule } from "react-simple-maps";
@@ -64,7 +64,7 @@ export default function AuroraPage() {
   };
 
   // Generate aurora observation points based on Kp index
-  const generateAuroraPoints = (kp: number): AuroraDataPoint[] => {
+  const generateAuroraPoints = useCallback((kp: number): AuroraDataPoint[] => {
     const safeKp = Number(kp) || 3; // Ensure valid number
     const auroraLat = calculateAuroraLatitude(safeKp);
     const intensity = Math.min(100, Math.round(safeKp * 11)); // Convert Kp (0-9) to percentage
@@ -160,7 +160,7 @@ export default function AuroraPage() {
     }
 
     return points;
-  };
+  }, []);
 
   useEffect(() => {
     async function fetchAuroraData() {
@@ -185,7 +185,7 @@ export default function AuroraPage() {
     // Refresh every 5 minutes
     const interval = setInterval(fetchAuroraData, 300000);
     return () => clearInterval(interval);
-  }, []);
+  }, [generateAuroraPoints]);
 
   const handleLangSelect = (code: string) => {
     if (code === "TR" || code === "EN") {
@@ -394,10 +394,10 @@ export default function AuroraPage() {
                   />
 
                   <Geographies geography={geoUrl}>
-                    {({ geographies }: any) =>
-                      geographies.map((geo: any) => (
+                    {({ geographies }: { geographies: unknown[] }) =>
+                      geographies.map((geo: unknown) => (
                         <Geography
-                          key={geo.rsmKey}
+                          key={(geo as { rsmKey: string }).rsmKey}
                           geography={geo}
                           fill="#0a0b0d"
                           stroke="#1e293b"
