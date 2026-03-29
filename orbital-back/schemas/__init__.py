@@ -11,6 +11,13 @@ class UserRole(str, Enum):
     ADMIN = "ADMIN"
 
 
+class AlertSeverity(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
 # --- Auth ---
 class UserCreate(BaseModel):
     full_name: Optional[str] = None
@@ -31,6 +38,11 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class UserUpdate(BaseModel):
+    is_active: Optional[bool] = None
+    role: Optional[UserRole] = None
+
+
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -48,6 +60,30 @@ class TokenData(BaseModel):
 
 class RecoverRequest(BaseModel):
     email: EmailStr
+
+
+# --- Alert ---
+class AlertCreate(BaseModel):
+    title: str
+    message: str
+    severity: AlertSeverity
+    threat_type: Optional[str] = None
+    affected_users: int = 0
+    is_global: bool = False
+
+
+class AlertOut(BaseModel):
+    id: int
+    title: str
+    message: str
+    severity: AlertSeverity
+    threat_type: Optional[str]
+    affected_users: int
+    is_global: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 # --- Satellite ---

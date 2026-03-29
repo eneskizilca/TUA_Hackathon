@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -11,6 +11,13 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
 
 
+class AlertSeverity(str, enum.Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -19,10 +26,23 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.OBSERVER, nullable=False)
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=False)  # Changed to False by default
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     satellites = relationship("Satellite", back_populates="owner")
+
+
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    severity = Column(Enum(AlertSeverity), nullable=False)
+    threat_type = Column(String, nullable=True)  # SHIELD_BREACH, CME, etc.
+    affected_users = Column(Integer, default=0)
+    is_global = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Satellite(Base):
