@@ -1,5 +1,7 @@
 # Orbital Sense
 
+🛰️ Güneş fırtınalarına karşı otonom erken uyarı kalkanı. L1 Lagrange noktasından alınan telemetriyi yapay zeka ile işleyerek uyduları anında güvenli moda alır.
+
 Space weather monitoring and asset tracking system developed for TUA Hackathon.
 
 ## Overview
@@ -78,6 +80,7 @@ Create a `.env` file in `orbital-back`:
 ```
 DATABASE_URL=sqlite:///./orbital.db
 SECRET_KEY=your-secret-key-here
+NASA_API_KEY=your-nasa-key
 ```
 
 ## License
